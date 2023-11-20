@@ -74,26 +74,31 @@ def save_numpy_as_gif(array, filename, fps=20, scale=1.0):
     return clip
 
 
-def save_numpy_to_gif_matplotlib(array, filename, interval=50):
-    from matplotlib import animation
-    from matplotlib import pyplot as plt
+def save_numpy_to_gif_matplotlib(array, filename):
+    import subprocess
 
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(1, 1, 1)
+    def save_images_as_files(image_list, output_folder='temp_frames'):
+        # Create a temporary directory to store individual frame images
+        subprocess.call(['mkdir', output_folder])
 
-    def img_show(i):
-        plt.imshow(array[i])
-        print("showing image {}".format(i))
-        return
+        # Save each 2D array as an individual image file (e.g., PNG)
+        for i, img_array in enumerate(image_list):
+            imageio.imwrite(f'{output_folder}/frame_{i:04d}.png', img_array)
 
-    ani = animation.FuncAnimation(fig, img_show, len(array), interval=interval)
+        return output_folder
 
-    ani.save('{}.mp4'.format(filename))
+    def create_video_from_images(image_folder, output_path, fps=24):
+        # Use ffmpeg to create a video from the saved image files
+        subprocess.call(['ffmpeg', '-framerate', str(fps), '-i', f'{image_folder}/frame_%04d.png', '{}.mp4'.format(filename)])
 
-    import ffmpy
-    ff = ffmpy.FFmpeg(
-        inputs={"{}.mp4".format(filename): None},
-        outputs={"{}.gif".format(filename): None})
+    # Replace 'image_list' with your actual list of 2D NumPy arrays
+    image_list = array
 
-    ff.run()
-    # plt.show()
+    # Save the 2D arrays as individual image files
+    image_folder = save_images_as_files(image_list)
+
+    # Create the video from the saved image files
+    create_video_from_images(image_folder, '{}.mp4'.format(filename), fps=24)
+
+    # Remove the temporary directory and its contents
+    subprocess.call(['rm', '-r', image_folder])

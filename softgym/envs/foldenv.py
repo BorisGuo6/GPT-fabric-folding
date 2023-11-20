@@ -19,6 +19,7 @@ class FoldEnv:
         self.gui = gui
         self.gui_render_freq = 2
         self.gui_step = 0
+        self.rgb_array = []
 
         # setup env
         self.setup_env()
@@ -56,8 +57,9 @@ class FoldEnv:
 
     def step_simulation(self):
         pyflex.step()
-        if self.gui and self.gui_step % self.gui_render_freq == 0:
-            pyflex.render()
+        if self.gui_step % self.gui_render_freq == 0:
+            rgb, _ = self.render_image()
+            self.rgb_array.append(rgb)
         self.gui_step += 1
 
     def set_grasp(self, grasp):

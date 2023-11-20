@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 from softgym.envs.foldenv import FoldEnv
-from utils.visual import get_world_coord_from_pixel, action_viz, nearest_to_mask
+from utils.visual import get_world_coord_from_pixel, action_viz, nearest_to_mask, save_video
 import pyflex
 from utils.setup_model import get_configs, setup_model
 import torch
@@ -34,6 +34,7 @@ def main():
     parser.add_argument("--model_config", type=str, help="Evaluate which model")
     parser.add_argument("--model_file", type=str, help="Evaluate which trained model")
     parser.add_argument("--cached", type=str, help="Cached filename")
+    parser.add_argument('--save_video_dir', type=str, default='./videos/', help='Path to the saved video')
     args = parser.parse_args()
 
     # task
@@ -155,6 +156,9 @@ def main():
                 img = rgbs[i]
             imageio.imwrite(os.path.join(save_folder, str(i) + ".png"), img)
 
+        # Save a video from the list of the image arrays
+        save_video(env.rgb_array, os.path.join(args.save_video_dir, args.task, str(config_id)))
+        env.rgb_array = []
 
 if __name__ == "__main__":
     main()

@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import cv2
 from softgym.utils.gemo_utils import *
+from softgym.utils.visualization import *
 
 #################################################
 #################Camera Setting###################
@@ -95,3 +96,10 @@ def nearest_to_mask(u, v, depth):
     mask_idx = np.argwhere(depth)
     nearest_idx = mask_idx[((mask_idx - [u, v]) ** 2).sum(1).argmin()]
     return nearest_idx
+
+
+#################################################
+################# Save Video ####################
+#################################################
+def save_video(img_list, filename):
+    save_numpy_to_gif_matplotlib(np.array(img_list), filename)
