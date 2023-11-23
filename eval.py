@@ -35,6 +35,8 @@ def main():
     parser.add_argument("--model_file", type=str, help="Evaluate which trained model")
     parser.add_argument("--cached", type=str, help="Cached filename")
     parser.add_argument('--save_video_dir', type=str, default='./videos/', help='Path to the saved video')
+    parser.add_argument('--save_vid', type=bool, default=False, help='Decide whether to save video or not')
+    parser.add_argument('--user_points', type=bool, default=False, help='Allows the user to choose their own action points')
     args = parser.parse_args()
 
     # task
@@ -107,22 +109,34 @@ def main():
             current_frames = rearrange(current_frames, "b t c h w -> b c t h w")
             current_frames = current_frames.to(device)
 
-            # get action
-            pickmap, placemap = net(current_frames)
-            pickmap = torch.sigmoid(torch.squeeze(pickmap))
-            placemap = torch.sigmoid(torch.squeeze(placemap))
-            pickmap = pickmap.detach().cpu().numpy()
-            placemap = placemap.detach().cpu().numpy()
+            # get action based on the input asked to the user
+            if args.user_points:
+                pick_str = input("Enter the pick pixel in the form [x,y]: ")
+                test_pick_pixel = np.array(tuple(map(float, pick_str.strip("[]").split(','))))
 
-            test_pick_pixel = np.array(np.unravel_index(pickmap.argmax(), pickmap.shape))
-            test_place_pixel = np.array(np.unravel_index(placemap.argmax(), placemap.shape))
+                place_str = input("Enter the place pixel in the form [x,y]: ")
+                test_place_pixel = np.array(tuple(map(float, place_str.strip("[]").split(','))))
+            else:
+                pickmap, placemap = net(current_frames)
+                pickmap = torch.sigmoid(torch.squeeze(pickmap))
+                placemap = torch.sigmoid(torch.squeeze(placemap))
+                pickmap = pickmap.detach().cpu().numpy()
+                placemap = placemap.detach().cpu().numpy()
 
-            mask = get_mask(depth)
-            test_pick_pixel_mask = nearest_to_mask(test_pick_pixel[0], test_pick_pixel[1], mask)
-            test_pick_pixel[0], test_pick_pixel[1] = test_pick_pixel_mask[1], test_pick_pixel_mask[0]
-            test_place_pixel[0], test_place_pixel[1] = test_place_pixel[1], test_place_pixel[0]
+                test_pick_pixel = np.array(np.unravel_index(pickmap.argmax(), pickmap.shape))
+                test_place_pixel = np.array(np.unravel_index(placemap.argmax(), placemap.shape))
+
+                mask = get_mask(depth)
+                test_pick_pixel_mask = nearest_to_mask(test_pick_pixel[0], test_pick_pixel[1], mask)
+                test_pick_pixel[0], test_pick_pixel[1] = test_pick_pixel_mask[1], test_pick_pixel_mask[0]
+                test_place_pixel[0], test_place_pixel[1] = test_place_pixel[1], test_place_pixel[0]
+            
+            # Appending the chosen pickels to the list of the pick and place pixels
             test_pick_pixels.append(test_pick_pixel)
             test_place_pixels.append(test_place_pixel)
+
+            # Printing the pixels chosen/computed
+            print("The Pick and the place pixels", test_pick_pixel, test_place_pixel)
 
             # convert the pixel cords into world cords
             test_pick_pos = get_world_coord_from_pixel(test_pick_pixel, depth, camera_params)
@@ -157,7 +171,8 @@ def main():
             imageio.imwrite(os.path.join(save_folder, str(i) + ".png"), img)
 
         # Save a video from the list of the image arrays
-        save_video(env.rgb_array, os.path.join(args.save_video_dir, args.task, str(config_id)))
+        if args.save_vid:
+            save_video(env.rgb_array, os.path.join(args.save_video_dir, args.task, str(config_id)))
         env.rgb_array = []
 
 if __name__ == "__main__":
