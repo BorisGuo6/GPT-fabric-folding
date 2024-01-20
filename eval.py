@@ -11,7 +11,8 @@ from tqdm import tqdm
 from einops import rearrange
 from utils.load_configs import get_configs
 import imageio
-
+from skimage.transform import resize
+from utils.gpt_prompts import system_prompt, user_prompt
 
 def get_mask(depth):
     mask = depth.copy()
@@ -30,7 +31,7 @@ def main():
     parser = argparse.ArgumentParser(description="Evaluate Foldsformer")
     parser.add_argument("--gui", action="store_true", help="Run headless or not")
     parser.add_argument("--task", type=str, default="DoubleTriangle", help="Task name")
-    parser.add_argument("--img_size", type=int, default=224, help="Size of rendered image")
+    parser.add_argument("--img_size", type=int, default=128, help="Size of rendered image")
     parser.add_argument("--model_config", type=str, help="Evaluate which model")
     parser.add_argument("--model_file", type=str, help="Evaluate which trained model")
     parser.add_argument("--cached", type=str, help="Cached filename")
@@ -74,6 +75,7 @@ def main():
     goal_frames = []
     for i in frames_idx:
         frame = imageio.imread(os.path.join(depth_load_path, str(i) + ".png")) / 255
+        frame = resize(frame, (args.img_size, args.img_size), anti_aliasing=True)
         frame = torch.FloatTensor(preprocess(frame)).unsqueeze(0).unsqueeze(0)
         goal_frames.append(frame)
     goal_frames = torch.cat(goal_frames, dim=0)
