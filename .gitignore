@@ -7,3 +7,4 @@ data/
 train/trained model
 cached configs/
 videos/
+logs/

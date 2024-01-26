@@ -1,4 +1,6 @@
 import argparse
+import sys
+from datetime import date
 import numpy as np
 from softgym.envs.foldenv import FoldEnv
 from utils.visual import get_world_coord_from_pixel, action_viz, nearest_to_mask, save_video
@@ -12,7 +14,12 @@ from einops import rearrange
 from utils.load_configs import get_configs
 import imageio
 from skimage.transform import resize
-from utils.gpt_prompts import system_prompt, user_prompt
+from utils.gpt_utils import system_prompt, get_user_prompt, parse_output
+from openai import OpenAI
+from slurm_utils import find_corners, find_pixel_center_of_cloth
+
+from openai import OpenAI
+client = OpenAI(api_key="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")
 
 def get_mask(depth):
     mask = depth.copy()
@@ -37,7 +44,7 @@ def main():
     parser.add_argument("--cached", type=str, help="Cached filename")
     parser.add_argument('--save_video_dir', type=str, default='./videos/', help='Path to the saved video')
     parser.add_argument('--save_vid', type=bool, default=False, help='Decide whether to save video or not')
-    parser.add_argument('--user_points', type=bool, default=False, help='Allows the user to choose their own action points')
+    parser.add_argument('--user_points', type=str, default="user", help='Choose one of [user | llm | foldsformer]')
     args = parser.parse_args()
 
     # task
@@ -54,6 +61,13 @@ def main():
     elif task == "DoubleTriangle":
         frames_idx = [0, 1, 1, 2, 2]
         steps = 2
+
+    # Writing things to the specified log file
+    output_file_path = os.path.join("logs", args.task, args.cached)
+    if not os.path.exists(output_file_path):
+        os.makedirs(output_file_path)
+    output_file = os.path.join(output_file_path, str(date.today()) + ".log")
+    sys.stdout = open(output_file, 'w', buffering=1)
 
     # env settings
     cached_path = os.path.join("cached configs", args.cached + ".pkl")
@@ -81,8 +95,8 @@ def main():
     goal_frames = torch.cat(goal_frames, dim=0)
 
     for config_id in tqdm(range(env.num_configs)):
-        rgb_save_path = os.path.join("eval result", args.task, str(config_id), "rgb")
-        depth_save_path = os.path.join("eval result", args.task, str(config_id), "depth")
+        rgb_save_path = os.path.join("eval result", args.task, args.cached, str(config_id), "rgb")
+        depth_save_path = os.path.join("eval result", args.task, args.cached, str(config_id), "depth")
         if not os.path.exists(rgb_save_path):
             os.makedirs(rgb_save_path)
         if not os.path.exists(depth_save_path):
@@ -104,20 +118,56 @@ def main():
         imageio.imwrite(os.path.join(depth_save_path, "0.png"), depth_save)
         imageio.imwrite(os.path.join(rgb_save_path, "0.png"), rgb)
         rgbs.append(rgb)
+        
+        image_path = os.path.join("eval result", args.task, args.cached, str(config_id), "depth", "0.png")
+        cloth_center = find_pixel_center_of_cloth(image_path)
 
         for i in range(steps):
+            print("------------------------------------------------------")
+            print("Currently in {} step of {} config".format(i, config_id))
+
             current_state = torch.FloatTensor(preprocess(depth)).unsqueeze(0).unsqueeze(0)
             current_frames = torch.cat((current_state, goal_frames), dim=0).unsqueeze(0)
             current_frames = rearrange(current_frames, "b t c h w -> b c t h w")
             current_frames = current_frames.to(device)
 
             # get action based on the input asked to the user
-            if args.user_points:
+            if args.user_points == "user":
                 pick_str = input("Enter the pick pixel in the form [x,y]: ")
                 test_pick_pixel = np.array(tuple(map(float, pick_str.strip("[]").split(','))))
 
                 place_str = input("Enter the place pixel in the form [x,y]: ")
                 test_place_pixel = np.array(tuple(map(float, place_str.strip("[]").split(','))))
+            
+            # get action based on what our LLM API integration predicts 
+            elif args.user_points == "llm":
+                image_path = os.path.join("eval result", args.task, args.cached, str(config_id), "depth", str(i) + ".png")
+                cloth_corners = find_corners(image_path)
+
+                # getting the system and user prompts for our given request
+                user_prompt = get_user_prompt(cloth_corners, cloth_center, args.task)
+                print(user_prompt)
+                response = client.chat.completions.create(
+                    model="gpt-4-1106-preview",
+                    messages=[
+                        {
+                        "role": "system",
+                        "content": system_prompt
+                        },
+                        {
+                        "role": "user",
+                        "content": user_prompt
+                        }
+                    ],
+                    temperature=0,
+                    max_tokens=769,
+                    top_p=1,
+                    frequency_penalty=0,
+                    presence_penalty=0
+                )
+                # Parsing the above output to get the pixel coorindates for pick and place
+                test_pick_pixel, test_place_pixel = parse_output(response.choices[0].message.content)
+                print(response.choices[0].message.content)
             else:
                 pickmap, placemap = net(current_frames)
                 pickmap = torch.sigmoid(torch.squeeze(pickmap))
@@ -156,12 +206,12 @@ def main():
             rgbs.append(rgb)
 
         particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
-        with open(os.path.join("eval result", args.task, str(config_id), "info.pkl"), "wb+") as f:
+        with open(os.path.join("eval result", args.task, args.cached, str(config_id), "info.pkl"), "wb+") as f:
             data = {"pick": test_pick_pixels, "place": test_place_pixels, "pos": particle_pos}
             pickle.dump(data, f)
 
         # action viz
-        save_folder = os.path.join("eval result", args.task, str(config_id), "rgbviz")
+        save_folder = os.path.join("eval result", args.task, args.cached, str(config_id), "rgbviz")
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
 
@@ -174,7 +224,10 @@ def main():
 
         # Save a video from the list of the image arrays
         if args.save_vid:
-            save_video(env.rgb_array, os.path.join(args.save_video_dir, args.task, str(config_id)))
+            save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached)
+            if not os.path.exists(save_vid_path):
+                os.makedirs(save_vid_path)
+            save_video(env.rgb_array, os.path.join(save_vid_path, str(config_id)))
         env.rgb_array = []
 
 if __name__ == "__main__":

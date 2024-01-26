@@ -1,9 +1,10 @@
 import numpy as np
 from PIL import Image
 import cv2
+import os
 from matplotlib import pyplot as plt 
 
-def save_depth_as_matrix(image_path, output_path):
+def save_depth_as_matrix(image_path, output_path = None, save_matrix = True):
     '''
     This function takes the path of the image and saves the depth image in a form where the background is 0
     We would pass this matrix to the LLM API in order to get the picking and placing pixels
@@ -20,35 +21,62 @@ def save_depth_as_matrix(image_path, output_path):
 
     image_array = image_array * mask
     image_array = image_array * 100
-    np.savetxt(output_path, np.round(image_array, decimals=2), fmt='%.2f')
+    if save_matrix:
+        np.savetxt(output_path, np.round(image_array, decimals=2), fmt='%.2f')
+    return image_array
+
+def find_pixel_center_of_cloth(image_path):
+    '''
+    This function would be used to get the pixel center corresponding to the initial cloth configuration
+    '''
+    image_matrix = save_depth_as_matrix(image_path, None, False)
+
+    # Find indices of non-zero values
+    nonzero_indices = np.nonzero(image_matrix)
+
+    # Calculate the center coordinates
+    center_x = int(np.mean(nonzero_indices[1]))
+    center_y = int(np.mean(nonzero_indices[0]))
+
+    return (center_x, center_y)
 
 def find_corners(image_path):
     '''
     This function will use the OpenCV methods to detect the cloth corners from the given depth image
     '''
-    img = cv2.imread(image_path)
+    image_matrix = save_depth_as_matrix(image_path, None, False)
+    cv2.imwrite("./to_be_deleted.png", image_matrix)
+
+    img = cv2.imread("./to_be_deleted.png")
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    corners = cv2.goodFeaturesToTrack(gray, 27, 0.01, 10) 
-    corners = np.int0(corners) 
+
+    # Implementing Harris corner detection by myself to get the corners. Does not work though
+    # corners = cv2.cornerHarris(gray,2,3,0.04)
+    # corners_thresholded = corners > 0.01 * corners.max()
+    # corner_coordinates = np.array(np.where(corners_thresholded)).T
+    
+    # Using OpenCV.goodFeaturesToTrack() function to get the corners
+    corner_coordinates = cv2.goodFeaturesToTrack(image = gray, maxCorners = 27, qualityLevel = 0.04, minDistance = 10, useHarrisDetector = True) 
+    corner_coordinates = np.intp(corner_coordinates) 
 
     # Plotting the original image with the detected corners
-    for i in corners: 
-        x, y = i.ravel() 
-        cv2.circle(img, (x, y), 3, 255, -1)     
-    plt.imshow(img), plt.show() 
-    plt.savefig("temp.png")
+    if __name__ == "__main__":
+        for i in corner_coordinates: 
+            x, y = i.ravel() 
+            cv2.circle(img, (x, y), 3, 255, -1)     
+        plt.imshow(img), plt.show() 
+        plt.savefig("temp.png")
 
-    return corners
+    os.remove("./to_be_deleted.png")
+    return corner_coordinates
 
-# Replace 'your_image.jpg' with the actual path to your image file
-image_path = './eval result/DoubleTriangle/0/depth/1.png'
-cloth_corners = find_corners(image_path)
+if __name__ == "__main__":
+    # Replace 'your_image.jpg' with the actual path to your image file
+    image_path = './eval result/DoubleTriangle/3/depth/1.png'
+    cloth_corners = find_corners(image_path)
 
-print("Pixel coordinates of cloth corners:")
-for corner in cloth_corners:
-    print(corner)
+    print("Pixel coordinates of cloth center:", find_pixel_center_of_cloth(image_path))
 
-# test_input_path = "./eval result/DoubleTriangle/0/depth/1.png"
-# test_goal_path = "./data/demo/DoubleTriangle/depth/2.png"
-# save_depth_as_matrix(test_input_path, "./input_depth.txt")
-# save_depth_as_matrix(test_goal_path, "./goal_depth.txt")
+    print("Pixel coordinates of cloth corners:")
+    for corner in cloth_corners:
+        print(corner)
