@@ -3,6 +3,8 @@ from PIL import Image
 import cv2
 import os
 from matplotlib import pyplot as plt 
+import pickle
+from pprint import pprint
 
 def save_depth_as_matrix(image_path, output_path = None, save_matrix = True):
     '''
@@ -70,13 +72,51 @@ def find_corners(image_path):
     os.remove("./to_be_deleted.png")
     return corner_coordinates
 
+def analyze_foldsformer_pickles(pickle_path):
+    '''
+    DO NOT import this. I am simply playing around with this function lol
+    '''
+    with open(pickle_path, 'rb') as f:
+        data = pickle.load(f)
+    pprint(data)
+
+def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, cherry_pick = False):
+    '''
+    This function is used to generate the mean particle distance error between the eval and expert results
+    When the cherry pick boolean is set to True, we only get the numbers for the success scenarios for a given experimental run
+    '''
+    # Manually inspected success cases for the most recent run for DoubleTriangle (2024-01-26.log)
+    successful_indices = [0,1,2,4,6,8,16,17,19,21,22,26,32,38]
+
+    # Get the number of configs on which are we experimenting (could be hard-coded to 40)
+    total_indices_len = 0
+    with open(cached_path, "rb") as f:
+        _, init_states = pickle.load(f)
+        total_indices_len = len(init_states)
+    total_indices = [i for i in range(total_indices_len)]    
+
+    # Based on cherry picking, decide the indices to be picked
+    test_indices = successful_indices if cherry_pick else total_indices
+
+    # Now actually go through each and every saved final cloth configuration and compute the distances
+    distance_list = []
+    for config_id in test_indices:
+        eval_info = os.path.join(eval_dir, str(config_id), "info.pkl")
+        expert_info = os.path.join(expert_dir, str(config_id), "info.pkl")
+        with open(eval_info, "rb") as f:
+            eval_pos = pickle.load(f)
+        with open(expert_info, "rb") as f:
+            expert_pos = pickle.load(f)
+        eval_pos = eval_pos['pos']
+        expert_pos = expert_pos['pos']
+
+        # [TODO] Perform some pre-processing to make sure that the inclinations align
+        dist = np.linalg.norm(expert_pos - eval_pos, axis=1).mean()
+        distance_list.append(dist)
+
+    # Get the mean of the mean of the overall distance_list that we have
+    return sum(distance_list) * 1. / len(distance_list)
+
 if __name__ == "__main__":
-    # Replace 'your_image.jpg' with the actual path to your image file
-    image_path = './eval result/DoubleTriangle/3/depth/1.png'
-    cloth_corners = find_corners(image_path)
-
-    print("Pixel coordinates of cloth center:", find_pixel_center_of_cloth(image_path))
-
-    print("Pixel coordinates of cloth corners:")
-    for corner in cloth_corners:
-        print(corner)
+    mean_err = get_mean_particle_distance_error("eval result/DoubleTriangle/square", "data/demonstrations/DoubleTriangle/square", "cached configs/square.pkl")
+    print(mean_err)

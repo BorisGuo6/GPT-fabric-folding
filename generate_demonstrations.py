@@ -15,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate Demonstrations")
     parser.add_argument("--gui", action="store_true", help="Run headless or not")
     parser.add_argument("--task", type=str, default="DoubleTriangle", help="Task name")
-    parser.add_argument("--img_size", type=int, default=224, help="Size of rendered image")
+    parser.add_argument("--img_size", type=int, default=128, help="Size of rendered image")
     parser.add_argument("--cached", type=str, help="Cached filename")
     args = parser.parse_args()
 
@@ -27,7 +27,7 @@ def main():
     demonstrator = Demonstrator[args.task]()
 
     # save settings
-    save_path = os.path.join("data", "demonstrations", args.task)
+    save_path = os.path.join("data", "demonstrations", args.task, args.cached)
     os.makedirs(save_path, exist_ok=True)
 
     # other settings
