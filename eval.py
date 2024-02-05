@@ -144,8 +144,11 @@ def main():
                 image_path = os.path.join("eval result", args.task, args.cached, str(config_id), "depth", str(i) + ".png")
                 cloth_corners = find_corners(image_path)
 
+                # Instruction list obtained via analysing demo fold images
+                instruction_list = ["Pick up the bottom right corner of the cloth and fold it diagonally towards the top left corner, aligning the edges to form a triangle with the pink side facing up.", "Take the right corner of the triangle and fold it diagonally towards the left corner, making sure the tip of the right corner meets the left corner, resulting in a smaller triangle with one layer of orange visible on the side."]
+
                 # getting the system and user prompts for our given request
-                user_prompt = get_user_prompt(cloth_corners, cloth_center, args.task)
+                user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction_list, i, args.task)
                 print(user_prompt)
                 response = client.chat.completions.create(
                     model="gpt-4-1106-preview",

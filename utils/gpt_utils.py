@@ -20,7 +20,23 @@ Output:
 PLEASE OUTPUT THE PICK POINT AND THE PLACE POINT FIRST AND THEN OUTPUT THE THOUGHT PROCESS INVOLVED
 '''
 
-def get_user_prompt(corners, center, task):
+image_analysis_instruction = '''I will be providing you with three images. In each image, you will see a background that's divided into four quadrants with alternating shades of gray. Think of this background as a flat surface on which a cloth is kept. 
+This cloth could be seen in the centre of these images as an orange rectangle. The back of this cloth is pink in color and will not be visible in the first image where the cloth is lying flat on the table.
+
+Now, starting from the initial configuration of the cloth as shown in the first image, someone picks a point on the cloth and places it to another point of the cloth achieving a fold. The result after this first folding step can be seen in the second image. And the cloth is folded again in a similar fashion till it reaches the configuration shown in the last image.
+
+I want you to describe the instructions for each folding step (i.e from the first image to the second, from the second image to the third, and so on) that someone could follow to achieve the same fold.
+
+RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY: 
+- Fold 0: Instructions for the first fold
+- Fold 1: Instructions for the second fold
+...
+- Fold n: Instructions for the last fold
+
+NOTE: REFER TO THE OBJECT IN THE CENTER AS CLOTH ONLY AND NOT AS A COLOUR OR SHAPE
+'''
+
+def get_user_prompt(corners, center, autoPrompt, instruction_list, index, task):
     '''
     This code consists of the specific CoT prompts designed for the different kinds of folds involved here    
     '''
@@ -28,12 +44,16 @@ def get_user_prompt(corners, center, task):
     corners = str(corners)
     cloth_info = "- Cloth corners: " + corners + "\n- Initial Cloth center: " + center
 
-    if task == "DoubleTriangle":
-        return "- Method of folding: Choose two most distant points among the cloth corners and put them together to achieve a fold\n" + cloth_info
-    elif task == "AllCornersInward":
-        return "- Choose the point from the given cloth corners that is the FARTHEST from the Initial cloth center and return it as the Pick Point. Here, you MUST return the Initial cloth center as the Place point\n" + cloth_info
+    if autoPrompt:
+        return instruction_list[index] + "\n" + cloth_info
     else:
-        return "Not implemented"
+        # The following lines correspond to the previous way of manually constructing the GPT prompts for the different folds
+        if task == "DoubleTriangle":
+            return "- Method of folding: Choose two most distant points among the cloth corners and put them together to achieve a fold\n" + cloth_info
+        elif task == "AllCornersInward":
+            return "- Choose the point from the given cloth corners that is the FARTHEST from the Initial cloth center and return it as the Pick Point. Here, you MUST return the Initial cloth center as the Place point\n" + cloth_info
+        else:
+            return "Not implemented"
     
 def parse_output(output):
     '''
@@ -58,3 +78,67 @@ def parse_output(output):
         place_point = np.array(tuple(map(int, place_match.groups())))
 
     return pick_point, place_point
+
+def analyze_images_gpt(path_list):
+    '''
+    This function takes the paths of the demonstration images and returns the description about what's happening
+    TODO: Currently this function is only callable inside. Make sure that it could be imported while evaluating
+    '''
+    import base64
+    from openai import OpenAI
+    import requests
+    api_key="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"
+    client = OpenAI(api_key=api_key)
+
+    # Function to encode image
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+
+    first_image = encode_image(path_list[0])
+    second_image = encode_image(path_list[1])
+    third_image = encode_image(path_list[2])
+
+    headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {api_key}"
+    }
+
+    payload = {
+        "model": "gpt-4-vision-preview",
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": image_analysis_instruction},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{first_image}"
+                        }
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{second_image}"
+                        }
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{third_image}"
+                        }
+                    }
+                ]
+            }
+        ],
+        "max_tokens": 1000,
+        "temperature": 0
+    }
+
+    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    print(response.json())
+
+if __name__ == "__main__":
+    path_list = ["/home/ved2311/foldsformer/data/demo/DoubleTriangle/rgb/0.png", "/home/ved2311/foldsformer/data/demo/DoubleTriangle/rgb/1.png", "/home/ved2311/foldsformer/data/demo/DoubleTriangle/rgb/2.png"]
+    analyze_images_gpt(path_list)
