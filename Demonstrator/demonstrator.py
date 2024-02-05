@@ -3,10 +3,15 @@ import numpy as np
 
 class DoubleTriangle:
     def __init__(self):
-        self.pick_idxs = [2, 3]
+        self.pick_idxs = [[1,0],[1,3],[2,0],[2,3],[0,1],[0,2],[3,1],[3,2]]
 
     def get_action(self, curr_corners, pick_idx):
-        place_idx = 3 - pick_idx
+        if pick_idx == 2 or pick_idx == 3:
+            place_idx = 3 - pick_idx
+        elif pick_idx == 1:
+            place_idx = 2
+        else:
+            place_idx = 3
         pick_pos = curr_corners[pick_idx]
         place_pos = curr_corners[place_idx]
 

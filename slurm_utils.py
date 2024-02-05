@@ -145,32 +145,39 @@ def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, cherry_p
 
     # Now actually go through each and every saved final cloth configuration and compute the distances
     distance_list = []
+
+    # Number of possible configurations for the given kind of fold. Have set it to 8 for the Double Triangle fold
+    num_info = 8
+
     for config_id in test_indices:
         eval_info = os.path.join(eval_dir, str(config_id), "info.pkl")
-        expert_info = os.path.join(expert_dir, str(config_id), "info.pkl")
         with open(eval_info, "rb") as f:
             eval_pos = pickle.load(f)
-        with open(expert_info, "rb") as f:
-            expert_pos = pickle.load(f)
-
         eval_pos = eval_pos['pos']
-        expert_pos = expert_pos['pos']
-        min_dist = np.linalg.norm(expert_pos - eval_pos, axis=1).mean()
-        expert_pos_min = expert_pos.copy()
-        min_ind = -1
+
+        min_dist = np.inf
+        for i in range(num_info):
+            expert_info = os.path.join(expert_dir, str(config_id), "info-" + str(i) + ".pkl")
+            with open(expert_info, "rb") as f:
+                expert_pos = pickle.load(f)
+
+            expert_pos = expert_pos['pos']
+            min_dist = min(min_dist, np.linalg.norm(expert_pos - eval_pos, axis=1).mean())
+            expert_pos_min = expert_pos.copy()
+            min_ind = -1
 
         # Rotate the expert demonstrations by 90 degrees in anticlockwise direction four times
-        for i in range(4):
-            expert_pos = rotate_anticlockwise(expert_pos)
-            dist = np.linalg.norm(expert_pos - eval_pos, axis=1).mean()
-            if dist < min_dist:
-                min_ind = i
-                expert_pos_min = expert_pos.copy()
-                min_dist = dist
+        # for i in range(4):
+        #     expert_pos = rotate_anticlockwise(expert_pos)
+        #     dist = np.linalg.norm(expert_pos - eval_pos, axis=1).mean()
+        #     if dist < min_dist:
+        #         min_ind = i
+        #         expert_pos_min = expert_pos.copy()
+        #         min_dist = dist
 
-        # To solve the incorrect z-value alignment, find the closest demo cloth particle
-        if min_ind != -1:
-            min_dist = correct_z_alignment(expert_pos_min, eval_pos)
+        # # To solve the incorrect z-value alignment, find the closest demo cloth particle
+        # if min_ind != -1:
+        #     min_dist = correct_z_alignment(expert_pos_min, eval_pos)
 
         print(config_id, min_dist)
         distance_list.append(min_dist)
@@ -193,7 +200,7 @@ def merge_images_horizontally(parent_path):
     cv2.imwrite(write_path, merged_image)
 
 if __name__ == "__main__":
-    mean_err = get_mean_particle_distance_error("eval result/AllCornersInward/square", "data/demonstrations/AllCornersInward/square", "cached configs/square.pkl", False)
+    mean_err = get_mean_particle_distance_error("eval result/DoubleTriangle/square/2024-02-04", "data/demonstrations/DoubleTriangle/square", "cached configs/square.pkl", False)
     print(np.mean(np.array(mean_err)), np.std(np.array(mean_err)))
     # merge_images_horizontally("/home/ved2311/foldsformer/eval result/AllCornersInward/square/20")
     # analyze_foldsformer_pickles("/home/ved2311/foldsformer/data/demonstrations/DoubleTriangle/square/0/info.pkl")

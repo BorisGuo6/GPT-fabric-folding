@@ -58,23 +58,31 @@ def main():
         rgbs.append(rgb)
 
         if args.task == "DoubleTriangle":
-            pick_idxs = demonstrator.pick_idxs
-            for i, pick_idx in enumerate(pick_idxs):
-                curr_corners = env.get_corners()
-                pick_pos, place_pos = demonstrator.get_action(curr_corners, pick_idx)
-                pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
-                place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
-                env.pick_and_place(pick_pos.copy(), place_pos.copy())
-                rgb, depth = env.render_image()
+            pick_idxs_comb = demonstrator.pick_idxs
+            for ind, pick_idxs in enumerate(pick_idxs_comb):
+                for i, pick_idx in enumerate(pick_idxs):
+                    curr_corners = env.get_corners()
+                    pick_pos, place_pos = demonstrator.get_action(curr_corners, pick_idx)
+                    pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
+                    place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
+                    env.pick_and_place(pick_pos.copy(), place_pos.copy())
+                    rgb, depth = env.render_image()
 
-                # save
-                pick_pixels.append(pick_pixel)
-                place_pixels.append(place_pixel)
-                imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + ".png"), rgb)
-                depth = depth * 255
-                depth = depth.astype(np.uint8)
-                imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + ".png"), depth)
-                rgbs.append(rgb)
+                    # save
+                    pick_pixels.append(pick_pixel)
+                    place_pixels.append(place_pixel)
+                    imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + '-' + str(ind) + ".png"), rgb)
+                    depth = depth * 255
+                    depth = depth.astype(np.uint8)
+                    imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + '-' + str(ind) + ".png"), depth)
+                    rgbs.append(rgb)
+
+                # Saving the particle positions for each of the different possible configurations
+                particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+                with open(os.path.join(save_folder, "info-" + str(ind) + ".pkl"), "wb+") as f:
+                    data = {"pick": pick_pixels, "place": place_pixels, "pos": particle_pos}
+                    pickle.dump(data, f)
+                env.reset(config_id=config_id)
 
         elif args.task == "AllCornersInward":
             pick_idxs = np.arange(4)
@@ -136,24 +144,19 @@ def main():
                 imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + ".png"), depth)
                 rgbs.append(rgb)
 
-        particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+        ## Commenting the action visualization saving for now
+        # # action viz
+        # save_folder_viz = os.path.join(save_folder, "rgbviz")
+        # os.makedirs(save_folder_viz, exist_ok=True)
 
-        with open(os.path.join(save_folder, "info.pkl"), "wb+") as f:
-            data = {"pick": pick_pixels, "place": place_pixels, "pos": particle_pos}
-            pickle.dump(data, f)
+        # num_actions = len(pick_pixels)
 
-        # action viz
-        save_folder_viz = os.path.join(save_folder, "rgbviz")
-        os.makedirs(save_folder_viz, exist_ok=True)
-
-        num_actions = len(pick_pixels)
-
-        for i in range(num_actions + 1):
-            if i < num_actions:
-                img = action_viz(rgbs[i], pick_pixels[i], place_pixels[i])
-            else:
-                img = rgbs[i]
-            imageio.imwrite(os.path.join(save_folder_viz, str(i) + ".png"), img)
+        # for i in range(num_actions + 1):
+        #     if i < num_actions:
+        #         img = action_viz(rgbs[i], pick_pixels[i], place_pixels[i])
+        #     else:
+        #         img = rgbs[i]
+        #     imageio.imwrite(os.path.join(save_folder_viz, str(i) + ".png"), img)
 
 
 if __name__ == "__main__":

@@ -95,8 +95,8 @@ def main():
     goal_frames = torch.cat(goal_frames, dim=0)
 
     for config_id in tqdm(range(env.num_configs)):
-        rgb_save_path = os.path.join("eval result", args.task, args.cached, str(config_id), "rgb")
-        depth_save_path = os.path.join("eval result", args.task, args.cached, str(config_id), "depth")
+        rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date.today()), str(config_id), "rgb")
+        depth_save_path = os.path.join("eval result", args.task, args.cached, str(date.today()), str(config_id), "depth")
         if not os.path.exists(rgb_save_path):
             os.makedirs(rgb_save_path)
         if not os.path.exists(depth_save_path):
@@ -119,7 +119,7 @@ def main():
         imageio.imwrite(os.path.join(rgb_save_path, "0.png"), rgb)
         rgbs.append(rgb)
         
-        image_path = os.path.join("eval result", args.task, args.cached, str(config_id), "depth", "0.png")
+        image_path = os.path.join("eval result", args.task, args.cached, str(date.today()), str(config_id), "depth", "0.png")
         cloth_center = find_pixel_center_of_cloth(image_path)
 
         for i in range(steps):
@@ -141,11 +141,11 @@ def main():
             
             # get action based on what our LLM API integration predicts 
             elif args.user_points == "llm":
-                image_path = os.path.join("eval result", args.task, args.cached, str(config_id), "depth", str(i) + ".png")
+                image_path = os.path.join("eval result", args.task, args.cached, str(date.today()), str(config_id), "depth", str(i) + ".png")
                 cloth_corners = find_corners(image_path)
 
                 # Instruction list obtained via analysing demo fold images
-                instruction_list = ["Pick up the bottom right corner of the cloth and fold it diagonally towards the top left corner, aligning the edges to form a triangle with the pink side facing up.", "Take the right corner of the triangle and fold it diagonally towards the left corner, making sure the tip of the right corner meets the left corner, resulting in a smaller triangle with one layer of orange visible on the side."]
+                instruction_list = ["Pick one corner and bring it diagonally across to meet the opposite corner, creating a half-fold with the underside now visible", "Take the corner of the newly exposed underside at the fold and bring it diagonally across to meet the opposite corner, resulting in a quarter-fold with multiple layers visible along one edge."]
 
                 # getting the system and user prompts for our given request
                 user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction_list, i, args.task)
@@ -209,12 +209,12 @@ def main():
             rgbs.append(rgb)
 
         particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
-        with open(os.path.join("eval result", args.task, args.cached, str(config_id), "info.pkl"), "wb+") as f:
+        with open(os.path.join("eval result", args.task, args.cached, str(date.today()), str(config_id), "info.pkl"), "wb+") as f:
             data = {"pick": test_pick_pixels, "place": test_place_pixels, "pos": particle_pos}
             pickle.dump(data, f)
 
         # action viz
-        save_folder = os.path.join("eval result", args.task, args.cached, str(config_id), "rgbviz")
+        save_folder = os.path.join("eval result", args.task, args.cached, str(date.today()), str(config_id), "rgbviz")
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
 
@@ -227,7 +227,7 @@ def main():
 
         # Save a video from the list of the image arrays
         if args.save_vid:
-            save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached)
+            save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached, str(date.today()))
             if not os.path.exists(save_vid_path):
                 os.makedirs(save_vid_path)
             save_video(env.rgb_array, os.path.join(save_vid_path, str(config_id)))

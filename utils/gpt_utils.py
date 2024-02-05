@@ -27,13 +27,14 @@ Now, starting from the initial configuration of the cloth as shown in the first 
 
 I want you to describe the instructions for each folding step (i.e from the first image to the second, from the second image to the third, and so on) that someone could follow to achieve the same fold.
 
-RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY: 
+NOTE: DO NOT INCLUDE WORDS LIKE ORANGE, TRIANGLE, SQUARE, PINK, LAYERS, EQUAL in the response.
+Also, try to AVOID using directional references like top-right, bottom-left etc in the response. DESCRIBE THE ACTIONS IN TERMS OF THE CORNERS, CENTER, DIAGONAL DISTANCE etc.
+
+RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY:
 - Fold 0: Instructions for the first fold
 - Fold 1: Instructions for the second fold
 ...
 - Fold n: Instructions for the last fold
-
-NOTE: REFER TO THE OBJECT IN THE CENTER AS CLOTH ONLY AND NOT AS A COLOUR OR SHAPE
 '''
 
 def get_user_prompt(corners, center, autoPrompt, instruction_list, index, task):
@@ -98,6 +99,8 @@ def analyze_images_gpt(path_list):
     first_image = encode_image(path_list[0])
     second_image = encode_image(path_list[1])
     third_image = encode_image(path_list[2])
+    # fourth_image = encode_image(path_list[3])
+    # fifth_image = encode_image(path_list[4])
 
     headers = {
     "Content-Type": "application/json",
@@ -129,10 +132,22 @@ def analyze_images_gpt(path_list):
                             "url": f"data:image/jpeg;base64,{third_image}"
                         }
                     }
+                    # {
+                    #     "type": "image_url",
+                    #     "image_url": {
+                    #         "url": f"data:image/jpeg;base64,{fourth_image}"
+                    #     }
+                    # },
+                    # {
+                    #     "type": "image_url",
+                    #     "image_url": {
+                    #         "url": f"data:image/jpeg;base64,{fifth_image}"
+                    #     }
+                    # }
                 ]
             }
         ],
-        "max_tokens": 1000,
+        "max_tokens": 300,
         "temperature": 0
     }
 
@@ -140,5 +155,6 @@ def analyze_images_gpt(path_list):
     print(response.json())
 
 if __name__ == "__main__":
+    # path_list = ["/home/ved2311/foldsformer/data/demo/AllCornersInward/rgb/0.png", "/home/ved2311/foldsformer/data/demo/AllCornersInward/rgb/1.png", "/home/ved2311/foldsformer/data/demo/AllCornersInward/rgb/2.png", "/home/ved2311/foldsformer/data/demo/AllCornersInward/rgb/3.png", "/home/ved2311/foldsformer/data/demo/AllCornersInward/rgb/4.png"]
     path_list = ["/home/ved2311/foldsformer/data/demo/DoubleTriangle/rgb/0.png", "/home/ved2311/foldsformer/data/demo/DoubleTriangle/rgb/1.png", "/home/ved2311/foldsformer/data/demo/DoubleTriangle/rgb/2.png"]
     analyze_images_gpt(path_list)
