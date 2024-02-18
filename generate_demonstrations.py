@@ -88,61 +88,86 @@ def main():
             pick_idxs = np.arange(4)
             curr_corners = env.get_corners()
             center = env.get_center()
-            for (i, pick_idx) in enumerate(pick_idxs):
-                pick_pos, place_pos = demonstrator.get_action(curr_corners, center, pick_idx)
-                pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
-                place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
-                env.pick_and_place(pick_pos.copy(), place_pos.copy())
-                rgb, depth = env.render_image()
+            for ind in range(8,9):
+                for (i, pick_idx) in enumerate(pick_idxs):
+                    pick_pos, place_pos = demonstrator.get_action(curr_corners, center, pick_idx)
+                    pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
+                    place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
+                    env.pick_and_place(pick_pos.copy(), place_pos.copy())
+                    rgb, depth = env.render_image()
 
-                # save
-                pick_pixels.append(pick_pixel)
-                place_pixels.append(place_pixel)
-                imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + ".png"), rgb)
-                depth = depth * 255
-                depth = depth.astype(np.uint8)
-                imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + ".png"), depth)
-                rgbs.append(rgb)
+                    # save
+                    pick_pixels.append(pick_pixel)
+                    place_pixels.append(place_pixel)
+                    imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + '-' + str(ind) + ".png"), rgb)
+                    depth = depth * 255
+                    depth = depth.astype(np.uint8)
+                    imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + '-' + str(ind) + ".png"), depth)
+                    rgbs.append(rgb)
+
+                # Saving the particle positions for each of the different possible configurations
+                particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+                with open(os.path.join(save_folder, "info-" + str(ind) + ".pkl"), "wb+") as f:
+                    data = {"pick": pick_pixels, "place": place_pixels, "pos": particle_pos}
+                    pickle.dump(data, f)
+                env.reset(config_id=config_id)
 
         elif args.task == "CornersEdgesInward":
             center = env.get_center()
-            for (i, pickplace_idx) in enumerate(demonstrator.pickplace_idxs):
-                curr_corners = env.get_corners()
-                edge_middles = env.get_edge_middles()
-                pick_pos, place_pos = demonstrator.get_action(curr_corners, edge_middles, center, pickplace_idx)
-                pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
-                place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
-                env.pick_and_place(pick_pos.copy(), place_pos.copy())
-                rgb, depth = env.render_image()
+            pickplace_idx_comb = demonstrator.pickplace_idxs
+            for (ind, pickplace_idxs) in enumerate(pickplace_idx_comb):
+                for (i, pickplace_idx) in enumerate(pickplace_idxs):
+                    curr_corners = env.get_corners()
+                    edge_middles = env.get_edge_middles()
+                    pick_pos, place_pos = demonstrator.get_action(curr_corners, edge_middles, center, pickplace_idx)
+                    pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
+                    place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
+                    env.pick_and_place(pick_pos.copy(), place_pos.copy())
+                    rgb, depth = env.render_image()
 
-                # save
-                pick_pixels.append(pick_pixel)
-                place_pixels.append(place_pixel)
-                imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + ".png"), rgb)
-                depth = depth * 255
-                depth = depth.astype(np.uint8)
-                imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + ".png"), depth)
-                rgbs.append(rgb)
+                    # save
+                    pick_pixels.append(pick_pixel)
+                    place_pixels.append(place_pixel)
+                    imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + '-' + str(ind) + ".png"), rgb)
+                    depth = depth * 255
+                    depth = depth.astype(np.uint8)
+                    imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + '-' + str(ind) + ".png"), depth)
+                    rgbs.append(rgb)
+
+                # Saving the particle positions for each of the different possible configurations
+                particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+                with open(os.path.join(save_folder, "info-" + str(ind) + ".pkl"), "wb+") as f:
+                    data = {"pick": pick_pixels, "place": place_pixels, "pos": particle_pos}
+                    pickle.dump(data, f)
+                env.reset(config_id=config_id)
 
         elif args.task == "DoubleStraight":
-            pickplace_idxs = demonstrator.pickplace_idxs
-            for (i, pickplace_idx) in enumerate(pickplace_idxs):
-                curr_corners = env.get_corners()
-                edge_middles = env.get_edge_middles()
-                pick_pos, place_pos = demonstrator.get_action(curr_corners, edge_middles, pickplace_idx)
-                pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
-                place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
-                env.pick_and_place(pick_pos.copy(), place_pos.copy())
-                rgb, depth = env.render_image()
+            pickplace_idx_comb = demonstrator.pickplace_idxs
+            for (ind, pickplace_idxs) in enumerate(pickplace_idx_comb):
+                for (i, pickplace_idx) in enumerate(pickplace_idxs):
+                    curr_corners = env.get_corners()
+                    edge_middles = env.get_edge_middles()
+                    pick_pos, place_pos = demonstrator.get_action(curr_corners, edge_middles, pickplace_idx)
+                    pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
+                    place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
+                    env.pick_and_place(pick_pos.copy(), place_pos.copy())
+                    rgb, depth = env.render_image()
 
-                # save
-                pick_pixels.append(pick_pixel)
-                place_pixels.append(place_pixel)
-                imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + ".png"), rgb)
-                depth = depth * 255
-                depth = depth.astype(np.uint8)
-                imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + ".png"), depth)
-                rgbs.append(rgb)
+                    # save
+                    pick_pixels.append(pick_pixel)
+                    place_pixels.append(place_pixel)
+                    imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + '-' + str(ind) + ".png"), rgb)
+                    depth = depth * 255
+                    depth = depth.astype(np.uint8)
+                    imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + '-' + str(ind) + ".png"), depth)
+                    rgbs.append(rgb)
+
+                # Saving the particle positions for each of the different possible configurations
+                particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+                with open(os.path.join(save_folder, "info-" + str(ind) + ".pkl"), "wb+") as f:
+                    data = {"pick": pick_pixels, "place": place_pixels, "pos": particle_pos}
+                    pickle.dump(data, f)
+                env.reset(config_id=config_id)
 
         ## Commenting the action visualization saving for now
         # # action viz

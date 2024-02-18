@@ -1,5 +1,5 @@
 import numpy as np
-
+import random
 
 class DoubleTriangle:
     def __init__(self):
@@ -20,18 +20,22 @@ class DoubleTriangle:
 
 class AllCornersInward:
     def __init__(self):
-        self.gamma = 0.9
+        self.gamma = [0.9, 0.95, 1.0]
 
     def get_action(self, curr_corners, center, pick_idx):
         pick_pos = curr_corners[pick_idx]
-        place_pos = pick_pos + self.gamma * (center - pick_pos)
+        place_pos = pick_pos + self.gamma[2] * (center - pick_pos)
 
         return pick_pos, place_pos
 
 
 class DoubleStraight:
     def __init__(self):
-        self.pickplace_idxs = [(0, 1), (2, 3), (4, 7)]
+        zero_list = [[(0, 1), (2, 3), (4, 7)], [(0, 1), (2, 3), (7, 4)], [(0, 2), (1, 3), (5, 6)], [(0, 2), (1, 3), (6, 5)]]
+        one_list = [[(1, 0), (3, 2), (4, 7)], [(1, 0), (3, 2), (7, 4)], [(1, 3), (0, 2), (5, 6)], [(1, 3), (0, 2), (6, 5)]]
+        two_list = [[(2, 0), (3, 1), (5, 6)], [(2, 0), (3, 1), (6, 5)], [(2, 3), (0, 1), (4, 7)], [(2, 3), (0, 1), (7, 4)]]
+        three_list = [[(3, 1), (2, 0), (5, 6)], [(3, 1), (2, 0), (6, 5)], [(3, 2), (1, 0), (4, 7)], [(3, 2), (1, 0), (7, 4)]]
+        self.pickplace_idxs = zero_list + one_list + two_list + three_list
 
     def get_action(self, curr_corners, edge_middles, pickplace_idx):
         all_keypoints = np.concatenate((curr_corners, edge_middles), axis=0)
@@ -41,8 +45,12 @@ class DoubleStraight:
 
 class CornersEdgesInward:
     def __init__(self):
-        self.pickplace_idxs = [(0, 8), (2, 8), (1, 4), (3, 7)]
-        self.gamma = 0.9
+        zero_list = [[(0, 8), (1, 8), (2, 5), (3, 6)], [(0, 8), (1, 8), (3, 6), (2, 5)], [(0, 8), (2, 8), (1, 4), (3, 7)], [(0, 8), (2, 8), (3, 7), (1, 4)]]
+        one_list = [[(1, 8), (0, 8), (2, 5), (3, 6)], [(1, 8), (0, 8), (3, 6), (2, 5)], [(1, 8), (3, 8), (0, 4), (2, 7)], [(1, 8), (3, 8), (2, 7), (0, 4)]]
+        three_list = [[(3, 8), (1, 8), (0, 4), (2, 7)], [(3, 8), (1, 8), (2, 7), (0, 4)], [(3, 8), (2, 8), (0, 5), (1, 6)], [(3, 8), (2, 8), (1, 6), (0, 5)]]
+        two_list = [[(2, 8), (0, 8), (1, 4), (3, 7)], [(2, 8), (0, 8), (3, 7), (1, 4)], [(2, 8), (3, 8), (0, 5), (1, 6)], [(2, 8), (3, 8), (1, 6), (0, 5)]]
+        self.pickplace_idxs = zero_list + one_list + three_list + two_list
+        self.gamma = 1.0
 
     def get_action(self, curr_corners, edge_middles, center, pickplace_idx):
         all_keypoints = np.concatenate((curr_corners, edge_middles, np.array([center])), axis=0)

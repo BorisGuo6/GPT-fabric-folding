@@ -14,7 +14,7 @@ from einops import rearrange
 from utils.load_configs import get_configs
 import imageio
 from skimage.transform import resize
-from utils.gpt_utils import system_prompt, get_user_prompt, parse_output
+from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt
 from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth
 
@@ -141,14 +141,21 @@ def main():
             
             # get action based on what our LLM API integration predicts 
             elif args.user_points == "llm":
+                # Detecting corners for the current cloth configuration
                 image_path = os.path.join("eval result", args.task, args.cached, str(date.today()), str(config_id), "depth", str(i) + ".png")
                 cloth_corners = find_corners(image_path)
 
-                # Instruction list obtained via analysing demo fold images
-                instruction_list = ["Pick one corner and bring it diagonally across to meet the opposite corner, creating a half-fold with the underside now visible", "Take the corner of the newly exposed underside at the fold and bring it diagonally across to meet the opposite corner, resulting in a quarter-fold with multiple layers visible along one edge."]
+                # Getting the template folding instruction images from the demonstrations
+                demo_root_path = os.path.join("data", "demo", args.task, "rgbviz")
+                # init_image = os.path.join(demo_root_path, str(0) + ".png")
+                start_image = os.path.join(demo_root_path, str(i) + ".png")
+                last_image = os.path.join(demo_root_path, str(i+1) + ".png")
+
+                # Generating the instruction by analyzing the images
+                instruction = analyze_images_gpt([start_image, last_image])
 
                 # getting the system and user prompts for our given request
-                user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction_list, i, args.task)
+                user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task)
                 print(user_prompt)
                 response = client.chat.completions.create(
                     model="gpt-4-1106-preview",

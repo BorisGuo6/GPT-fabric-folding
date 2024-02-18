@@ -146,8 +146,12 @@ def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, cherry_p
     # Now actually go through each and every saved final cloth configuration and compute the distances
     distance_list = []
 
-    # Number of possible configurations for the given kind of fold. Have set it to 8 for the Double Triangle fold
-    num_info = 8
+    # Number of possible configurations for the given kind of fold. 
+    # Double Triangle -> 8
+    # All Corners Inward -> 9
+    # Corners Edges Inward -> 16
+    # Double Straight -> 16
+    num_info = 16
 
     for config_id in test_indices:
         eval_info = os.path.join(eval_dir, str(config_id), "info.pkl")
@@ -200,7 +204,7 @@ def merge_images_horizontally(parent_path):
     cv2.imwrite(write_path, merged_image)
 
 if __name__ == "__main__":
-    mean_err = get_mean_particle_distance_error("eval result/DoubleTriangle/square/2024-02-04", "data/demonstrations/DoubleTriangle/square", "cached configs/square.pkl", False)
+    mean_err = get_mean_particle_distance_error("eval result/DoubleStraight/rectangle/2024-02-10", "data/demonstrations/DoubleStraight/rectangle", "cached configs/rectangle.pkl", False)
     print(np.mean(np.array(mean_err)), np.std(np.array(mean_err)))
     # merge_images_horizontally("/home/ved2311/foldsformer/eval result/AllCornersInward/square/20")
     # analyze_foldsformer_pickles("/home/ved2311/foldsformer/data/demonstrations/DoubleTriangle/square/0/info.pkl")
