@@ -21,29 +21,19 @@ PLEASE OUTPUT THE PICK POINT AND THE PLACE POINT FIRST AND THEN OUTPUT THE THOUG
 '''
 
 image_analysis_instruction = '''
-I will be providing you with two images. In each image, you will see a background that's divided into four quadrants with alternating shades of gray. Think of this background as a flat surface on which a cloth is kept. 
+I will be providing you with two images. In each image, you will see a background that's divided into four quadrants with alternating shades of gray. Think of this background as a flat surface on which a cloth is kept.
 This cloth could be seen in the centre of these images as a geometric shape coloured with orange and pink.
+There is also a black arrow in the first image, which essentially represents an action where someone would pick a point on the cloth corresponding to the black dot from where the arrow originates. This would be represented as the picking point. On the other hand, the point where the tip of the black arrow is located corresponds to the location where the chosen picking point is placed. This is referred to as the placing point.
 
-Can you see a black arrow in the first image provided to you? Can you point out where exactly is the tip of the black arrow located in all the images it is present in? 
-DO NOT CONSIDER WHERE THE ARROW IS POINTING AT. ALSO DO NOT CONSIDER IN WHICH QUADRANT THE ARROW IS LOCATED AS THIS REASONING WILL CAUSE ERRORS. DO NOT USE THE WORD QUADRANT AT ALL. 
-LOOK AT THE EXACT PIXEL LOCATION OF THE TIP OF THE ARROW. Is it near the CENTER? How close is it to the CENTER? It can RELATIVELY CLOSE TO THE CENTER OR QUITE FAR FROM THE CENTER. Explain your response briefly.
-Now, consider the following task: 
-If your answer to the image under consideration above indicated that the point is "somewhat close to the center" then return True or else return False.
-
-This black arrow essentially represents an action where someone would pick a point on the cloth corresponding to the black dot from where the arrow originates, this would be represented as the picking point.
-And point where the tip of the black arrow is located corresponds to the location where the chosen picking point is placed. This is referred to as the placing point.
 This sequence of action of picking a point on the cloth and place it somewhere results in a fold, whose result can be seen in the next image. So basically we are folding the cloth in the first image to get to the second image.
+I want you to describe the instructions for the folding step that someone could follow to achieve the same fold. 
+Look at the relative location of the tip of the arrow with respect to the center of the image. Depending on whether this is near the center or a diagonally opposite point or a point along the given edge, choose your placing point as the center or a diagonally opposite point or a point along the given edge respectively. 
 
-I want you to describe the instructions for the folding step that someone could follow to achieve the same fold.
-NOTE: DO NOT INCLUDE WORDS LIKE ORANGE, TRIANGLE, SQUARE, PINK, LAYERS, BLACK DOT in the response.
-Also, try to AVOID using directional references like top-right, bottom-left etc in the response. DESCRIBE THE ACTIONS IN TERMS OF THE CORNERS, CENTER, DIAGONAL DISTANCE etc.
-
-IMPORTANT: WHILE CHOOSING THE PLACING POINT FOR THE FOLDING ACTION, IF YOUR ANSWER TO THE PREVIOUS TRUE/FALSE QUESTION FOR THE CURRENT IMAGE IS TRUE THEN ALWAYS STATE THAT THE PLACING FOR THAT PARTICULAR FOLDING STEP WILL BE THE CENTER.
+IMPORTANT: INLCUDE THE PICKING AND PLACING POINT INFORMATION IN THE RESPONSE. YOU MUST SPECIFY WHERE SHOULD THE PLACING POINT BE.
 
 RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY:
 - Instructions: The instructions for the given folding step.
-
-IMPORTANT: FOLLOW ALL THE GIVEN TASKS AND INSTRUCTIONS IN A SEQUENTIAL FASHION.
+- Explanation: Why did you choose this pair of picking and placing points.
 '''
 
 def get_user_prompt(corners, center, autoPrompt, instruction, task):
@@ -81,18 +71,21 @@ def parse_output(output):
     pick_point = None
     if pick_match:
         pick_point = np.array(tuple(map(int, pick_match.groups())))
+    else:
+        pick_point = np.array([None, None])
 
     # Extract x and y values for place point
     place_point = None
     if place_match:
         place_point = np.array(tuple(map(int, place_match.groups())))
+    else:
+        place_point = np.array([None, None])
 
     return pick_point, place_point
 
 def analyze_images_gpt(image_list):
     '''
     This function takes the paths of the demonstration images and returns the description about what's happening
-    TODO: Currently this function is only callable inside. Make sure that it could be imported while evaluating
     '''
     import base64
     import requests
@@ -142,7 +135,7 @@ def analyze_images_gpt(image_list):
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
         response = response.json()
         text = response['choices'][0]['message']['content']
-        match = re.search(r'Instructions: ([^.]*\.)', text)
+        match = re.search(r'Instructions: ([^\n]+)\.', text)
         if match:
             instruction = match.group(1)
     return instruction

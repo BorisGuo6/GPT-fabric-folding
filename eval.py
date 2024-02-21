@@ -154,30 +154,34 @@ def main():
                 # Generating the instruction by analyzing the images
                 instruction = analyze_images_gpt([start_image, last_image])
 
-                # getting the system and user prompts for our given request
-                user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task)
-                print(user_prompt)
-                response = client.chat.completions.create(
-                    model="gpt-4-1106-preview",
-                    messages=[
-                        {
-                        "role": "system",
-                        "content": system_prompt
-                        },
-                        {
-                        "role": "user",
-                        "content": user_prompt
-                        }
-                    ],
-                    temperature=0,
-                    max_tokens=769,
-                    top_p=1,
-                    frequency_penalty=0,
-                    presence_penalty=0
-                )
-                # Parsing the above output to get the pixel coorindates for pick and place
-                test_pick_pixel, test_place_pixel = parse_output(response.choices[0].message.content)
-                print(response.choices[0].message.content)
+                no_output = True
+                while no_output:
+                    # getting the system and user prompts for our given request
+                    user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task)
+                    print(user_prompt)
+                    response = client.chat.completions.create(
+                        model="gpt-4-1106-preview",
+                        messages=[
+                            {
+                            "role": "system",
+                            "content": system_prompt
+                            },
+                            {
+                            "role": "user",
+                            "content": user_prompt
+                            }
+                        ],
+                        temperature=0,
+                        max_tokens=769,
+                        top_p=1,
+                        frequency_penalty=0,
+                        presence_penalty=0
+                    )
+                    # Parsing the above output to get the pixel coorindates for pick and place
+                    test_pick_pixel, test_place_pixel = parse_output(response.choices[0].message.content)
+                    if test_pick_pixel.all() and test_place_pixel.all():
+                        no_output = False
+                    print(response.choices[0].message.content)
             else:
                 pickmap, placemap = net(current_frames)
                 pickmap = torch.sigmoid(torch.squeeze(pickmap))
