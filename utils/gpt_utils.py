@@ -134,10 +134,11 @@ def analyze_images_gpt(image_list):
 
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
         response = response.json()
-        text = response['choices'][0]['message']['content']
-        match = re.search(r'Instructions: ([^\n]+)\.', text)
-        if match:
-            instruction = match.group(1)
+        if 'choices' in response:
+            text = response['choices'][0]['message']['content']
+            match = re.search(r'Instructions: ([^\n]+)\.', text)
+            if match:
+                instruction = match.group(1)
     return instruction
 
 if __name__ == "__main__":

@@ -85,10 +85,9 @@ def analyze_foldsformer_pickles(pickle_path):
     print(np.min(mat_data[:, 1]), np.max(mat_data[:, 1]))
     print(np.min(mat_data[:, 2]), np.max(mat_data[:, 2]))
 
-def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, cherry_pick = False):
+def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, task, config_id):
     '''
     This function is used to generate the mean particle distance error between the eval and expert results
-    When the cherry pick boolean is set to True, we only get the numbers for the success scenarios for a given experimental run
     '''
     def rotate_anticlockwise(expert_pos):
         ## Defining this function to rotate the expert position by 90% in anticlockwise direction
@@ -127,31 +126,29 @@ def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, cherry_p
 
         return np.linalg.norm(A_permuted - B_permuted, axis=1).mean()
 
-    # Manually inspected success cases for the most recent run for DoubleTriangle (2024-01-26.log)
-    successful_indices = [0,1,2,4,6,8,16,17,19,21,22,26,32,38]
-
-    # Manually inspected success cases for the most recent run for AllCornersInward (2024-01-26.log)
-    # successful_indices = [0,5,23,27,29,31,32,39,8,11,12,24]
-
     # Get the number of configs on which are we experimenting (could be hard-coded to 40)
     total_indices_len = 0
     with open(cached_path, "rb") as f:
         _, init_states = pickle.load(f)
         total_indices_len = len(init_states)
-    total_indices = [i for i in range(total_indices_len)]    
+    total_indices = [i for i in range(total_indices_len)]
 
-    # Based on cherry picking, decide the indices to be picked
-    test_indices = successful_indices if cherry_pick else total_indices
+    # We pass the config ID to get the number while calling this function from the evaluation script 
+    if config_id == None:
+        test_indices = total_indices
+    else:
+        test_indices = [config_id]
 
     # Now actually go through each and every saved final cloth configuration and compute the distances
     distance_list = []
 
     # Number of possible configurations for the given kind of fold. 
-    # Double Triangle -> 8
-    # All Corners Inward -> 9
-    # Corners Edges Inward -> 16
-    # Double Straight -> 16
-    num_info = 16
+    if task == "DoubleTriangle":
+        num_info = 8
+    elif task == "AllCornersInward":
+        num_info = 9
+    else:
+        num_info = 16
 
     for config_id in test_indices:
         eval_info = os.path.join(eval_dir, str(config_id), "info.pkl")
@@ -167,26 +164,9 @@ def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, cherry_p
 
             expert_pos = expert_pos['pos']
             min_dist = min(min_dist, np.linalg.norm(expert_pos - eval_pos, axis=1).mean())
-            expert_pos_min = expert_pos.copy()
-            min_ind = -1
-
-        # Rotate the expert demonstrations by 90 degrees in anticlockwise direction four times
-        # for i in range(4):
-        #     expert_pos = rotate_anticlockwise(expert_pos)
-        #     dist = np.linalg.norm(expert_pos - eval_pos, axis=1).mean()
-        #     if dist < min_dist:
-        #         min_ind = i
-        #         expert_pos_min = expert_pos.copy()
-        #         min_dist = dist
-
-        # # To solve the incorrect z-value alignment, find the closest demo cloth particle
-        # if min_ind != -1:
-        #     min_dist = correct_z_alignment(expert_pos_min, eval_pos)
-
-        print(config_id, min_dist)
+        # print(config_id, min_dist)
         distance_list.append(min_dist)
 
-    # Get the mean of the mean of the overall distance_list that we have
     return sorted(distance_list)
 
 def merge_images_horizontally(parent_path):
@@ -204,7 +184,5 @@ def merge_images_horizontally(parent_path):
     cv2.imwrite(write_path, merged_image)
 
 if __name__ == "__main__":
-    mean_err = get_mean_particle_distance_error("eval result/DoubleStraight/rectangle/2024-02-18", "data/demonstrations/DoubleStraight/rectangle", "cached configs/rectangle.pkl", False)
+    mean_err = get_mean_particle_distance_error("eval result/DoubleStraight/rectangle/2024-02-18", "data/demonstrations/DoubleStraight/rectangle", "cached configs/rectangle.pkl", "DoubleStraight", 2)
     print(np.mean(np.array(mean_err)), np.std(np.array(mean_err)))
-    # merge_images_horizontally("/home/ved2311/foldsformer/eval result/AllCornersInward/square/20")
-    # analyze_foldsformer_pickles("/home/ved2311/foldsformer/data/demonstrations/DoubleTriangle/square/0/info.pkl")
