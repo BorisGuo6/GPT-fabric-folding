@@ -1,6 +1,6 @@
 import argparse
 import sys
-from datetime import date
+from datetime import date, timedelta
 import numpy as np
 from softgym.envs.foldenv import FoldEnv
 from utils.visual import get_world_coord_from_pixel, action_viz, nearest_to_mask, save_video
@@ -19,7 +19,7 @@ from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error
 
 from openai import OpenAI
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="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")
 
 def get_mask(depth):
     mask = depth.copy()
@@ -45,7 +45,7 @@ def main():
     parser.add_argument('--save_video_dir', type=str, default='./videos/', help='Path to the saved video')
     parser.add_argument('--save_vid', type=bool, default=False, help='Decide whether to save video or not')
     parser.add_argument('--user_points', type=str, default="llm", help='Choose one of [user | llm | foldsformer]')
-    parser.add_argument('--total_runs', type=int, default=10, help='Total number of experiments that we wish to run for our system')
+    parser.add_argument('--total_runs', type=int, default=5, help='Total number of experiments that we wish to run for our system')
     args = parser.parse_args()
 
     # task
@@ -88,8 +88,9 @@ def main():
         goal_frames.append(frame)
     goal_frames = torch.cat(goal_frames, dim=0)
 
-    # The data when the experiment was run
-    date_today = date.today()
+    # The date when the experiment was run
+    # [TODO] I have ran GPT-3.5 experiments for the next day i.e 24th Feb
+    date_today = date.today() + timedelta(days = 1)
     obtained_scores = np.zeros((args.total_runs, env.num_configs))
 
     for run in tqdm(range(args.total_runs)):
@@ -158,7 +159,7 @@ def main():
                     last_image = os.path.join(demo_root_path, str(i+1) + ".png")
 
                     # Generating the instruction by analyzing the images
-                    instruction = analyze_images_gpt([start_image, last_image])
+                    instruction = analyze_images_gpt([start_image, last_image], args.task, i)
 
                     no_output = True
                     while no_output:
@@ -166,7 +167,7 @@ def main():
                         user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task)
                         print(user_prompt)
                         response = client.chat.completions.create(
-                            model="gpt-4-1106-preview",
+                            model="gpt-3.5-turbo-0125",
                             messages=[
                                 {
                                 "role": "system",
@@ -185,7 +186,7 @@ def main():
                         )
                         # Parsing the above output to get the pixel coorindates for pick and place
                         test_pick_pixel, test_place_pixel = parse_output(response.choices[0].message.content)
-                        if test_pick_pixel.all() and test_place_pixel.all():
+                        if test_pick_pixel.all() != None and test_place_pixel.all() != None:
                             no_output = False
                         print(response.choices[0].message.content)
                 else:
@@ -204,6 +205,8 @@ def main():
                     test_place_pixel[0], test_place_pixel[1] = test_place_pixel[1], test_place_pixel[0]
                 
                 # Appending the chosen pickels to the list of the pick and place pixels
+                test_pick_pixel = np.array([min(127, test_pick_pixel[0]), min(127, test_pick_pixel[1])])
+                test_place_pixel = np.array([min(127, test_place_pixel[0]), min(127, test_place_pixel[1])])                
                 test_pick_pixels.append(test_pick_pixel)
                 test_place_pixels.append(test_place_pixel)
 

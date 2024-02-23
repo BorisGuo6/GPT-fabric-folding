@@ -183,6 +183,27 @@ def merge_images_horizontally(parent_path):
     write_path = os.path.join(parent_path, "rgbviz", "merged.png")
     cv2.imwrite(write_path, merged_image)
 
+def get_test_run_stats(parent_eval_dir, parent_expert_dir, cached_path, task):
+    '''
+    This keeps calling the script to get the mean particle distance error multiple times for the given config Id
+    '''
+    num_configs = 40
+    num_tests = 5
+    all_scores = np.zeros((num_tests, num_configs))
+    for test in range(num_tests):
+        for config in range(num_configs):
+            eval_dir = os.path.join(parent_eval_dir, str(test))
+            score = get_mean_particle_distance_error(eval_dir, parent_expert_dir, cached_path, task, config)
+            all_scores[test, config] = score[0]
+    min_list = np.zeros(num_configs)
+    avg_list = np.zeros(num_configs)
+    for config in range(num_configs):
+        min_list[config] = np.min(all_scores[:, config])
+        avg_list[config] = np.mean(all_scores[:, config])
+    
+    # Printing the stats reported
+    print("Mean and Std dev for the min values: ", np.mean(min_list) * 1000, np.std(min_list) * 1000)
+    print("Mean and Std dev for the mean values: ", np.mean(avg_list) * 1000, np.std(avg_list) * 1000)
+
 if __name__ == "__main__":
-    mean_err = get_mean_particle_distance_error("eval result/DoubleStraight/rectangle/2024-02-18", "data/demonstrations/DoubleStraight/rectangle", "cached configs/rectangle.pkl", "DoubleStraight", 2)
-    print(np.mean(np.array(mean_err)), np.std(np.array(mean_err)))
+    get_test_run_stats("eval result/AllCornersInward/square/2024-02-21", "data/demonstrations/AllCornersInward/square", "cached configs/square.pkl", "AllCornersInward")
