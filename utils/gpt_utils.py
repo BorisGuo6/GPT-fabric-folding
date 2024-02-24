@@ -1,6 +1,7 @@
 import re
 import numpy as np
 import os 
+import random
 
 system_prompt = '''**Cloth Folding Robot**
 Role: You are the brain of a cloth folding robot. The robot would pick one spot on the cloth (referred to as the "pick point"), lift it by a small amount, drag it over to another spot (referred to as "the place point"), and finally release it.
@@ -44,7 +45,8 @@ gpt_v_demonstrations = {
     },
     "AllCornersInward": {
         "data": [],
-        "instruction": "- Use this pair of images to guide your response"
+        "instruction": "- Use this pair of images to guide your response",
+        "gpt-demonstrations": ["4", "13", "39", "47", "82"]
     },
     "CornersEdgesInward": {
         "data": [],
@@ -56,7 +58,7 @@ gpt_v_demonstrations = {
     }
 }
 
-def get_user_prompt(corners, center, autoPrompt, instruction, task):
+def get_user_prompt(corners, center, autoPrompt, instruction, task, step):
     '''
     This code consists of the specific CoT prompts designed for the different kinds of folds involved here    
     '''
@@ -71,7 +73,12 @@ def get_user_prompt(corners, center, autoPrompt, instruction, task):
         if task == "DoubleTriangle":
             return "- Method of folding: Choose two most distant points among the cloth corners and put them together to achieve a fold\n" + cloth_info
         elif task == "AllCornersInward":
-            return "In process"
+            parent_path = "/home/ved2311/foldsformer/utils/prompt-list/AllCornersInward/ZeroShot"
+            step = max(0, step - 1)
+            file_path = os.path.join(parent_path, str(step) + ".txt")
+            with open(file_path, 'r') as f:
+                instructions = f.readlines()
+            return "- Method of folding: " + random.choice(instructions).strip() + "\n" + cloth_info
         else:
             return "Not implemented"
     
@@ -210,9 +217,9 @@ def analyze_images_gpt(image_list, task, action_id):
 if __name__ == "__main__":
     # Getting the responses for the first folding step
     response_set = set()
-    for i in range(50):
+    for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/DoubleStraight/rgbviz/0.png", "data/demo/DoubleStraight/rgbviz/1.png"], "DoubleStraight", 0)
+        response = analyze_images_gpt(["data/demo/AllCornersInward/rgbviz/0.png", "data/demo/AllCornersInward/rgbviz/1.png"], "AllCornersInward", 0)
         response_set.add(response)
     response_list_1 = list(response_set)
     response_list_1 = sorted(response_list_1)
@@ -221,9 +228,9 @@ if __name__ == "__main__":
 
     # Getting the responses for the second folding step
     response_set = set()
-    for i in range(50):
+    for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/DoubleStraight/rgbviz/1.png", "data/demo/DoubleStraight/rgbviz/2.png"], "DoubleStraight", 1)
+        response = analyze_images_gpt(["data/demo/AllCornersInward/rgbviz/1.png", "data/demo/AllCornersInward/rgbviz/2.png"], "AllCornersInward", 1)
         response_set.add(response)
     response_list_2 = list(response_set)
     response_list_2 = sorted(response_list_2)
@@ -232,17 +239,28 @@ if __name__ == "__main__":
 
     # Getting the responses for the third folding step
     response_set = set()
-    for i in range(50):
+    for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/DoubleStraight/rgbviz/2.png", "data/demo/DoubleStraight/rgbviz/3.png"], "DoubleStraight", 2)
+        response = analyze_images_gpt(["data/demo/AllCornersInward/rgbviz/2.png", "data/demo/AllCornersInward/rgbviz/3.png"], "AllCornersInward", 2)
         response_set.add(response)
     response_list_3 = list(response_set)
     response_list_3 = sorted(response_list_3)
     response_list_3.append("\n")
+    print()
+
+    # Getting the responses for the fourth folding step
+    response_set = set()
+    for i in range(20):
+        print(i)
+        response = analyze_images_gpt(["data/demo/AllCornersInward/rgbviz/3.png", "data/demo/AllCornersInward/rgbviz/4.png"], "AllCornersInward", 3)
+        response_set.add(response)
+    response_list_4 = list(response_set)
+    response_list_4 = sorted(response_list_4)
+    response_list_4.append("\n")
 
     # Saving this data into a file
-    response_list = response_list_1 + response_list_2 + response_list_3
-    with open("/home/ved2311/foldsformer/utils/prompt-list/double_straight.txt", "w") as f:
+    response_list = response_list_1 + response_list_2 + response_list_3 + response_list_4
+    with open("/home/ved2311/foldsformer/utils/prompt-list/all_corners_inward_zero_shot.txt", "w") as f:
         for line in response_list:
             f.write(line + "\n")
 

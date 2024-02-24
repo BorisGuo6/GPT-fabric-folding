@@ -1,5 +1,6 @@
 import argparse
 import sys
+import json
 from datetime import date, timedelta
 import numpy as np
 from softgym.envs.foldenv import FoldEnv
@@ -14,7 +15,7 @@ from einops import rearrange
 from utils.load_configs import get_configs
 import imageio
 from skimage.transform import resize
-from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt
+from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt, gpt_v_demonstrations
 from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error
 
@@ -90,7 +91,7 @@ def main():
 
     # The date when the experiment was run
     # [TODO] I have ran GPT-3.5 experiments for the next day i.e 24th Feb
-    date_today = date.today() + timedelta(days = 1)
+    date_today = date.today()
     obtained_scores = np.zeros((args.total_runs, env.num_configs))
 
     for run in tqdm(range(args.total_runs)):
@@ -166,18 +167,36 @@ def main():
                         # getting the system and user prompts for our given request
                         user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task)
                         print(user_prompt)
+
+                        # Getting the demonstrations for in-context learning
+                        indices = gpt_v_demonstrations[args.task]["gpt-demonstrations"]
+                        demonstration_dictionary_list = []
+                        gpt_demonstrations_path = os.path.join("utils", "gpt-demonstrations", args.task, "demonstrations.json")
+                        with open(gpt_demonstrations_path, 'r') as f:
+                            gpt_demonstrations = json.load(f)
+                        for index in indices:
+                            step_dictionary = gpt_demonstrations[index][i + 1]
+                            user_prompt_dictionary = {
+                                "role": "user",
+                                "content": step_dictionary["user-prompt"]
+                            }
+                            assistant_response_dictionary = {
+                                "role": "assistant",
+                                "content": step_dictionary["assistant-response"]
+                            }
+                            demonstration_dictionary_list += [user_prompt_dictionary, assistant_response_dictionary]
+
                         response = client.chat.completions.create(
-                            model="gpt-3.5-turbo-0125",
+                            model="gpt-4-1106-preview",
                             messages=[
                                 {
-                                "role": "system",
-                                "content": system_prompt
-                                },
-                                {
-                                "role": "user",
-                                "content": user_prompt
-                                }
-                            ],
+                                    "role": "system",
+                                    "content": system_prompt
+                                }] + demonstration_dictionary_list +
+                                [{
+                                    "role": "user",
+                                    "content": user_prompt
+                                }],
                             temperature=0,
                             max_tokens=769,
                             top_p=1,
@@ -206,7 +225,7 @@ def main():
                 
                 # Appending the chosen pickels to the list of the pick and place pixels
                 test_pick_pixel = np.array([min(127, test_pick_pixel[0]), min(127, test_pick_pixel[1])])
-                test_place_pixel = np.array([min(127, test_place_pixel[0]), min(127, test_place_pixel[1])])                
+                test_place_pixel = np.array([min(127, test_place_pixel[0]), min(127, test_place_pixel[1])])
                 test_pick_pixels.append(test_pick_pixel)
                 test_place_pixels.append(test_place_pixel)
 

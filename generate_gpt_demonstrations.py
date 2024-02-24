@@ -11,12 +11,13 @@ from softgym.envs.foldenv import FoldEnv
 from Demonstrator.demonstrator import Demonstrator
 from slurm_utils import find_corners, find_pixel_center_of_cloth
 from utils.gpt_utils import system_prompt, get_user_prompt, analyze_images_gpt
+import json
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Demonstrations")
     parser.add_argument("--gui", action="store_true", help="Run headless or not")
     parser.add_argument("--task", type=str, default="DoubleTriangle", help="Task name")
-    parser.add_argument("--img_size", type=int, default=224, help="Size of rendered image")
+    parser.add_argument("--img_size", type=int, default=128, help="Size of rendered image")
     parser.add_argument("--cached", type=str, help="Cached filename")
     args = parser.parse_args()
 
@@ -28,7 +29,7 @@ def main():
     demonstrator = Demonstrator[args.task]()
 
     # save settings
-    save_path = os.path.join("data", "gpt-demonstrations", args.task, args.cached, args.img_size)
+    save_path = os.path.join("data", "gpt-demonstrations", args.task, args.cached, str(args.img_size))
     os.makedirs(save_path, exist_ok=True)
 
     # other settings
@@ -85,7 +86,7 @@ def main():
                 rgbs.append(rgb)
 
         elif args.task == "AllCornersInward":
-            for i in range(4):
+            for i in range(5):
                 # Getting a json object corresponding to each step
                 step_json = {}
 
@@ -93,11 +94,8 @@ def main():
                 image_path = os.path.join(save_folder_depth, str(i) + ".png")
                 cloth_corners = find_corners(image_path)
 
-                # TODO - Get an instruction randomly from the saved list of instructions
-                instruction = ""
-
                 # Getting the user prompt and saving it in the json file
-                user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task)
+                user_prompt = get_user_prompt(cloth_corners, cloth_center, False, "", args.task, i)
                 step_json["user-prompt"] = user_prompt
                 step_json["system-prompt"] = system_prompt
 
@@ -110,38 +108,46 @@ def main():
                 thought_process += "I will use the square of the Euclidean distance between each corner and the center, " + str(cloth_center) +  ", and select the corner with the maximum distance.\n"
 
                 # Second step - Now, go through all the cloth corners and get the corner that is the farthest from the center
-                for (i, corner) in enumerate(cloth_corners):
-                    thought_process += str(i) + ": The distance for " + str(corner) + "is "
+                for (j, corner) in enumerate(cloth_corners):
+                    corner = corner[0]
+                    thought_process += str(j) + ": The distance for " + str(tuple(corner)) + "is "
                     thought_process += "(" + str(corner[0]) + "-" + str(cloth_center[0]) + ")^2 + (" + str(corner[1]) + "-" + str(cloth_center[1]) + ")^2 = "
-                    thought_process += str(np.linalg.norm(corner - cloth_center) ** 2) + "\n"
+                    thought_process += str(int(np.linalg.norm(corner - cloth_center) ** 2)) + "\n"
                 distances = [np.linalg.norm(x - cloth_center) for x in cloth_corners]
                 index = np.argmax(distances)
-                thought_process += "From this list above, we see that the cloth corner that is the farthest from the center is " + str(cloth_corners[index]) + "\n\n"
+                thought_process += "From this list above, we see that the cloth corner that is the farthest from the center is " + str(tuple(cloth_corners[index][0])) + "\n\n"
 
                 # Third step - Now select the above point as the pick point and the center as the place point and save it to the response
-                thought_process += "By picking the cloth at " + str(cloth_corners[index]) + " and placing it at the center at " + str(cloth_center) + " the resulting fold aligns with the instructions provided.\n"
-                thought_process += "The pick and place pixels " + str(cloth_corners[index]) + " " + str(cloth_center)
+                thought_process += "By picking the cloth at " + str(tuple(cloth_corners[index][0])) + " and placing it at the center at " + str(cloth_center) + " the resulting fold aligns with the instructions provided."
 
                 # Now saving these coorindates in the planning string as well
                 planning_string = "Planning:\n"
-                planning_string += "Pick Point = " + "(" + str(cloth_corners[index][0]) + ", " + str(cloth_corners[index][1]) + ")\n"
+                planning_string += "Pick Point = " + "(" + str(cloth_corners[index][0][0]) + ", " + str(cloth_corners[index][0][1]) + ")\n"
                 planning_string += "Place Point = " + "(" + str(cloth_center[0]) + ", " + str(cloth_center[1]) + ")\n"
                 step_json["assistant-response"] = planning_string + "\n" + thought_process
+                print(planning_string + "\n" + thought_process)
                 instructions_json[config_id][str(i)] = step_json
 
-                # Now performing the steps in simulation fr!
-                pick_pos = get_world_coord_from_pixel(cloth_corners[index], depth, camera_params)
-                place_pos = get_world_coord_from_pixel(cloth_center, depth, camera_params)
-                env.pick_and_place(pick_pos.copy(), place_pos.copy())
-                rgb, depth = env.render_image()
+                test_pick_pixel = tuple(cloth_corners[index][0])
+                test_place_pixel = cloth_center
+                print("The Pick and the place pixels", test_pick_pixel, test_place_pixel)
 
-                # save
-                pick_pixels.append(pick_pixel)
-                place_pixels.append(place_pixel)
+                pick_pixels.append(test_pick_pixel)
+                place_pixels.append(test_place_pixel)
+
+                # convert the pixel cords into world cords
+                test_pick_pos = get_world_coord_from_pixel(test_pick_pixel, depth, camera_params)
+                test_place_pos = get_world_coord_from_pixel(test_place_pixel, depth, camera_params)
+
+                # pick & place
+                env.pick_and_place(test_pick_pos.copy(), test_place_pos.copy())
+
+                # render & update frames & save
+                rgb, depth = env.render_image()
+                depth_save = depth.copy() * 255
+                depth_save = depth_save.astype(np.uint8)
+                imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + ".png"), depth_save)
                 imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + ".png"), rgb)
-                depth = depth * 255
-                depth = depth.astype(np.uint8)
-                imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + ".png"), depth)
                 rgbs.append(rgb)
 
         elif args.task == "CornersEdgesInward":
@@ -203,8 +209,9 @@ def main():
                 img = rgbs[i]
             imageio.imwrite(os.path.join(save_folder_viz, str(i) + ".png"), img)
 
-        # Saving the final dictionary for the current config
-        # TODO
+    # Saving the final dictionary for the current config
+    with open(os.path.join("utils/gpt-demonstrations/AllCornersInward", "demonstrations.json"), "w") as f:
+        json.dump(instructions_json, f, indent=4)
 
 if __name__ == "__main__":
     main()
