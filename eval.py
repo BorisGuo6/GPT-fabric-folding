@@ -46,7 +46,7 @@ def main():
     parser.add_argument('--save_video_dir', type=str, default='./videos/', help='Path to the saved video')
     parser.add_argument('--save_vid', type=bool, default=False, help='Decide whether to save video or not')
     parser.add_argument('--user_points', type=str, default="llm", help='Choose one of [user | llm | foldsformer]')
-    parser.add_argument('--total_runs', type=int, default=5, help='Total number of experiments that we wish to run for our system')
+    parser.add_argument('--total_runs', type=int, default=3, help='Total number of experiments that we wish to run for our system')
     args = parser.parse_args()
 
     # task
@@ -90,7 +90,6 @@ def main():
     goal_frames = torch.cat(goal_frames, dim=0)
 
     # The date when the experiment was run
-    # [TODO] I have ran GPT-3.5 experiments for the next day i.e 24th Feb
     date_today = date.today()
     obtained_scores = np.zeros((args.total_runs, env.num_configs))
 
@@ -165,7 +164,7 @@ def main():
                     no_output = True
                     while no_output:
                         # getting the system and user prompts for our given request
-                        user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task)
+                        user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task, None)
                         print(user_prompt)
 
                         # Getting the demonstrations for in-context learning
@@ -175,7 +174,7 @@ def main():
                         with open(gpt_demonstrations_path, 'r') as f:
                             gpt_demonstrations = json.load(f)
                         for index in indices:
-                            step_dictionary = gpt_demonstrations[index][i + 1]
+                            step_dictionary = gpt_demonstrations[str(index)][str(i + 1)]
                             user_prompt_dictionary = {
                                 "role": "user",
                                 "content": step_dictionary["user-prompt"]
@@ -187,7 +186,8 @@ def main():
                             demonstration_dictionary_list += [user_prompt_dictionary, assistant_response_dictionary]
 
                         response = client.chat.completions.create(
-                            model="gpt-4-1106-preview",
+                            model="gpt-3.5-turbo-0125",
+                            # model="gpt-4-1106-preview",
                             messages=[
                                 {
                                     "role": "system",
