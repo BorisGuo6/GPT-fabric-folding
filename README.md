@@ -1,9 +1,9 @@
 # GPT-Fabric: Folding and Smoothing Fabric by Leveraging Pre-Trained Foundation Models
-**Vedant Raval, Enyu Zhao, Hejia Zhang, Stefanos Nikolaidis, Daniel Seita**
+**Vedant Raval*, Enyu Zhao*, Hejia Zhang, Stefanos Nikolaidis, Daniel Seita**
 
 **University of Southern California**
 
-This repository is a python implementation of the paper "GPT-Fabric: Folding and Smoothing Fabric by Leveraging Pre-Trained Foundation Models", submitted to IROS 2024. This repository contains the code used to run the GPT-fabric simulation experimemts for fabric folding. The code for performing fabric smoothing can be found in the repo [Coming soon]()
+This repository is a python implementation of the paper "GPT-Fabric: Folding and Smoothing Fabric by Leveraging Pre-Trained Foundation Models", submitted to IROS 2024. This repository contains the code used to run the GPT-fabric simulation experiments for fabric folding. The code for performing fabric smoothing can be found in the repo [Coming soon]()
 
 [Website](https://sites.google.com/usc.edu/gpt-fabrics/home) | [ArXiv: Coming soon]()
 
