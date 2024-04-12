@@ -4,22 +4,18 @@ import json
 from datetime import date, timedelta
 import numpy as np
 from softgym.envs.foldenv import FoldEnv
-from utils.visual import get_world_coord_from_pixel, action_viz, nearest_to_mask, save_video
+from utils.visual import get_world_coord_from_pixel, action_viz, save_video
 import pyflex
-from utils.setup_model import get_configs, setup_model
-import torch
 import os
 import pickle
 from tqdm import tqdm
-from einops import rearrange
-from utils.load_configs import get_configs
 import imageio
-from skimage.transform import resize
 from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt, gpt_v_demonstrations
 from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error
 
 from openai import OpenAI
+# TODO: Remove the Open AI api key before releasing the scripts in public
 client = OpenAI(api_key="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")
 
 def get_mask(depth):
@@ -28,66 +24,38 @@ def get_mask(depth):
     mask[mask != 0] = 1
     return mask
 
-
 def preprocess(depth):
     mask = get_mask(depth)
     depth = depth * mask
     return depth
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Evaluate Foldsformer")
+    parser = argparse.ArgumentParser(description="Evaluate GPT-Fabric for cloth folding tasks")
     parser.add_argument("--gui", action="store_true", help="Run headless or not")
     parser.add_argument("--task", type=str, default="DoubleTriangle", help="Task name")
     parser.add_argument("--img_size", type=int, default=128, help="Size of rendered image")
-    parser.add_argument("--model_config", type=str, help="Evaluate which model")
-    parser.add_argument("--model_file", type=str, help="Evaluate which trained model")
+    parser.add_argument("--gpt_model", type=str, default="gpt-4-1106-preview", help="The GPT model that we wanna use for performing the folds")
     parser.add_argument("--cached", type=str, help="Cached filename")
     parser.add_argument('--save_video_dir', type=str, default='./videos/', help='Path to the saved video')
     parser.add_argument('--save_vid', type=bool, default=False, help='Decide whether to save video or not')
-    parser.add_argument('--user_points', type=str, default="llm", help='Choose one of [user | llm | foldsformer]')
+    parser.add_argument('--user_points', type=str, default="llm", help='Choose either user or llm')
     parser.add_argument('--total_runs', type=int, default=3, help='Total number of experiments that we wish to run for our system')
     args = parser.parse_args()
 
     # task
     task = args.task
     if task == "CornersEdgesInward":
-        frames_idx = [0, 1, 2, 3, 4]
         steps = 4
     elif task == "AllCornersInward":
-        frames_idx = [0, 1, 2, 3, 4]
         steps = 4
     elif task == "DoubleStraight":
-        frames_idx = [0, 1, 2, 3, 3]
         steps = 3
     elif task == "DoubleTriangle":
-        frames_idx = [0, 1, 1, 2, 2]
         steps = 2
 
     # env settings
     cached_path = os.path.join("cached configs", args.cached + ".pkl")
     env = FoldEnv(cached_path, gui=args.gui, render_dim=args.img_size)
-
-    # create transformer model & load parameters
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_config_path = os.path.join("train", "train configs", args.model_config + ".yaml")
-    configs = get_configs(model_config_path)
-    trained_model_path = os.path.join("train", "trained model", configs["save_model_name"], args.model_file + ".pth")
-    net = setup_model(configs)
-    net = net.to(device)
-    net.load_state_dict(torch.load(trained_model_path)["model"])
-    print(f"load trained model from {trained_model_path}")
-    net.eval()
-
-    # set goal
-    depth_load_path = os.path.join("data", "demo", args.task, "depth")
-    goal_frames = []
-    for i in frames_idx:
-        frame = imageio.imread(os.path.join(depth_load_path, str(i) + ".png")) / 255
-        frame = resize(frame, (args.img_size, args.img_size), anti_aliasing=True)
-        frame = torch.FloatTensor(preprocess(frame)).unsqueeze(0).unsqueeze(0)
-        goal_frames.append(frame)
-    goal_frames = torch.cat(goal_frames, dim=0)
 
     # The date when the experiment was run
     date_today = date.today()
@@ -126,17 +94,13 @@ def main():
             imageio.imwrite(os.path.join(rgb_save_path, "0.png"), rgb)
             rgbs.append(rgb)
             
+            # Get the position of the center of the cloth in the initial configuration to pivot the required folds
             image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", "0.png")
             cloth_center = find_pixel_center_of_cloth(image_path)
 
             for i in range(steps):
                 print("------------------------------------------------------")
                 print("Currently in {} step of {} config in {} run".format(i, config_id, run))
-
-                current_state = torch.FloatTensor(preprocess(depth)).unsqueeze(0).unsqueeze(0)
-                current_frames = torch.cat((current_state, goal_frames), dim=0).unsqueeze(0)
-                current_frames = rearrange(current_frames, "b t c h w -> b c t h w")
-                current_frames = current_frames.to(device)
 
                 # get action based on the input asked to the user
                 if args.user_points == "user":
@@ -154,7 +118,6 @@ def main():
 
                     # Getting the template folding instruction images from the demonstrations
                     demo_root_path = os.path.join("data", "demo", args.task, "rgbviz")
-                    # init_image = os.path.join(demo_root_path, str(0) + ".png")
                     start_image = os.path.join(demo_root_path, str(i) + ".png")
                     last_image = os.path.join(demo_root_path, str(i+1) + ".png")
 
@@ -186,8 +149,7 @@ def main():
                             demonstration_dictionary_list += [user_prompt_dictionary, assistant_response_dictionary]
 
                         response = client.chat.completions.create(
-                            model="gpt-3.5-turbo-0125",
-                            # model="gpt-4-1106-preview",
+                            model=args.gpt_model,
                             messages=[
                                 {
                                     "role": "system",
@@ -207,25 +169,17 @@ def main():
                         test_pick_pixel, test_place_pixel = parse_output(response.choices[0].message.content)
                         if test_pick_pixel.all() != None and test_place_pixel.all() != None:
                             no_output = False
+
+                        # Printing the response given by the LLM in the log file generated
                         print(response.choices[0].message.content)
-                else:
-                    pickmap, placemap = net(current_frames)
-                    pickmap = torch.sigmoid(torch.squeeze(pickmap))
-                    placemap = torch.sigmoid(torch.squeeze(placemap))
-                    pickmap = pickmap.detach().cpu().numpy()
-                    placemap = placemap.detach().cpu().numpy()
-
-                    test_pick_pixel = np.array(np.unravel_index(pickmap.argmax(), pickmap.shape))
-                    test_place_pixel = np.array(np.unravel_index(placemap.argmax(), placemap.shape))
-
-                    mask = get_mask(depth)
-                    test_pick_pixel_mask = nearest_to_mask(test_pick_pixel[0], test_pick_pixel[1], mask)
-                    test_pick_pixel[0], test_pick_pixel[1] = test_pick_pixel_mask[1], test_pick_pixel_mask[0]
-                    test_place_pixel[0], test_place_pixel[1] = test_place_pixel[1], test_place_pixel[0]
                 
+                else:
+                    print("Falls back when the action is neither selected by the user or predicted by LLM")
+                    exit(0)
+
                 # Appending the chosen pickels to the list of the pick and place pixels
-                test_pick_pixel = np.array([min(127, test_pick_pixel[0]), min(127, test_pick_pixel[1])])
-                test_place_pixel = np.array([min(127, test_place_pixel[0]), min(127, test_place_pixel[1])])
+                test_pick_pixel = np.array([min(args.img_size - 1, test_pick_pixel[0]), min(args.img_size - 1, test_pick_pixel[1])])
+                test_place_pixel = np.array([min(args.img_size - 1, test_place_pixel[0]), min(args.img_size - 1, test_place_pixel[1])])
                 test_pick_pixels.append(test_pick_pixel)
                 test_place_pixels.append(test_place_pixel)
 
@@ -247,6 +201,7 @@ def main():
                 imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
                 rgbs.append(rgb)
 
+            # Saving the final fold configuration in a pickle file
             particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
             with open(os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "info.pkl"), "wb+") as f:
                 data = {"pick": test_pick_pixels, "place": test_place_pixels, "pos": particle_pos}
@@ -256,7 +211,6 @@ def main():
             save_folder = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgbviz")
             if not os.path.exists(save_folder):
                 os.makedirs(save_folder)
-
             for i in range(steps + 1):
                 if i < steps:
                     img = action_viz(rgbs[i], test_pick_pixels[i], test_place_pixels[i])

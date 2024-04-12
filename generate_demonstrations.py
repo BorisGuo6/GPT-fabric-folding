@@ -1,3 +1,6 @@
+'''
+This script has been adapted from Kai Mo's scripts for Foldsformer, along with some additional changes to extend its functionality 
+'''
 import argparse
 import numpy as np
 from utils.visual import get_pixel_coord_from_world

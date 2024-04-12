@@ -1,3 +1,6 @@
+'''
+This script has been adapted from Kai Mo's scripts for Foldsformer, along with some additional changes to extend its functionality 
+'''
 import numpy as np
 import random
 

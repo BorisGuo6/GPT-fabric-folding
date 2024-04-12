@@ -136,6 +136,7 @@ def analyze_images_gpt(image_list, task, action_id):
     '''
     import base64
     import requests
+    # TODO - Remove the API key before making the code public
     api_key="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"
 
     # Function to encode image

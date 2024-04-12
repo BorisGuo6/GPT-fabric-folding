@@ -1,5 +1,5 @@
 # GPT-Fabric: Folding and Smoothing Fabric by Leveraging Pre-Trained Foundation Models
-**Vedant Raval*, Enyu Zhao*, Hejia Zhang, Stefanos Nikolaidis, Daniel Seita**
+**Vedant Raval, Enyu Zhao, Hejia Zhang, Stefanos Nikolaidis, Daniel Seita**
 
 **University of Southern California**
 
@@ -8,7 +8,8 @@ This repository is a python implementation of the paper "GPT-Fabric: Folding and
 [Website](https://sites.google.com/usc.edu/gpt-fabrics/home) | [ArXiv: Coming soon]()
 
 ## Table of Contents
-* [Installation](#Installation)
+* [Installation](#installation)
+* [Pre-requisites](#pre-requisites)
 * [GPT-Fabric, zero-shot](#evaluating-gpt-fabric-in-zero-shot-setting)
 * [GPT-Fabric, in-context](#evaluating-gpt-fabric-while-performing-in-context-learning)
 * [License](#license)
@@ -29,7 +30,6 @@ This simulation environment is based on SoftGym. You can follow the instructions
     * tqdm: `pip install tqdm`
     * yaml: `pip install PyYaml`
 
-
 4. Before you use the code, you should make sure the conda environment activated(`conda activate softgym`) and set up the paths appropriately: 
    ~~~
    export PYFLEXROOT=${PWD}/PyFlex
@@ -37,6 +37,10 @@ This simulation environment is based on SoftGym. You can follow the instructions
    export LD_LIBRARY_PATH=${PYFLEXROOT}/external/SDL2-2.0.4/lib/x64:$LD_LIBRARY_PATH
    ~~~
    The provided script `prepare_1.0.sh` includes these commands above.
+
+## Pre-requisites
+
+Coming soon
 
 ## Evaluating GPT-Fabric in zero-shot setting
 

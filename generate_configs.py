@@ -1,3 +1,6 @@
+'''
+This script has been adapted as it is from Kai Mo's scripts for Foldsformer 
+'''
 import numpy as np
 import pyflex
 from copy import deepcopy
