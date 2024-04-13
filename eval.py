@@ -40,6 +40,7 @@ def main():
     parser.add_argument('--save_vid', type=bool, default=False, help='Decide whether to save video or not')
     parser.add_argument('--user_points', type=str, default="llm", help='Choose either user or llm')
     parser.add_argument('--total_runs', type=int, default=3, help='Total number of experiments that we wish to run for our system')
+    parser.add_argument('--eval_type', type=str, default='in-context', help='Choose one of [zero-shot | in-context | fine-tuned] for GPT-Fabric')
     args = parser.parse_args()
 
     # task
