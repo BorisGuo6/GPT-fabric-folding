@@ -123,7 +123,7 @@ def main():
                     last_image = os.path.join(demo_root_path, str(i+1) + ".png")
 
                     # Generating the instruction by analyzing the images
-                    instruction = analyze_images_gpt([start_image, last_image], args.task, i)
+                    instruction = analyze_images_gpt([start_image, last_image], args.task, i, args.eval_type)
 
                     no_output = True
                     while no_output:
@@ -132,7 +132,7 @@ def main():
                         print(user_prompt)
 
                         # Getting the demonstrations for in-context learning
-                        indices = gpt_v_demonstrations[args.task]["gpt-demonstrations"]
+                        indices = gpt_v_demonstrations[args.eval_type][args.task]["gpt-demonstrations"]
                         demonstration_dictionary_list = []
                         gpt_demonstrations_path = os.path.join("utils", "gpt-demonstrations", args.task, "demonstrations.json")
                         with open(gpt_demonstrations_path, 'r') as f:

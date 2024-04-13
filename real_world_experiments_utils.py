@@ -126,14 +126,14 @@ def gpt_for_real_world(input_rgb, input_depth, cropped_depth_image, cloth_center
     demo_root_path = os.path.join("data", "demo", task, "rgbviz")
     start_image = os.path.join(demo_root_path, str(current_step) + ".png")
     last_image = os.path.join(demo_root_path, str(current_step+1) + ".png")
-    instruction = analyze_images_gpt([start_image, last_image], task, current_step)
+    instruction = analyze_images_gpt([start_image, last_image], task, current_step, "in-context")
 
     # Getting the user prompt based on the information that we have so far
     user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, task, None)
     print("The user prompt was: ", user_prompt)
 
     # Getting the demonstrations that would be used for the specific task
-    indices = gpt_v_demonstrations[task]["gpt-demonstrations"]
+    indices = gpt_v_demonstrations["in-context"][task]["gpt-demonstrations"]
 
     # Imp: The information corresponding to the demonstrations is assumed to be in utils folder
     demonstration_dictionary_list = []

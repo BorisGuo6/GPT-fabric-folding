@@ -1,5 +1,5 @@
 # GPT-Fabric: Folding and Smoothing Fabric by Leveraging Pre-Trained Foundation Models
-**Vedant Raval, Enyu Zhao, Hejia Zhang, Stefanos Nikolaidis, Daniel Seita**
+**Vedant Raval\*, Enyu Zhao\*, Hejia Zhang, Stefanos Nikolaidis, Daniel Seita**
 
 **University of Southern California**
 
@@ -90,7 +90,7 @@ This simulation environment is based on SoftGym. You can follow the instructions
     python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type zero-shot
     ~~~
 
-- The above scripts would run GPT-fabric for fabric folding corresponding to the specified `--task` for each initial cloth configuration in the saved `--cached` configurations. The choice of which GPT model do we wanna use is specified by `--gpt_model` and the `--eval_type` corresponding to *zero-shot* would correspond to the zero-shot version of GPT-Fabric for fabric folding. In our reported results, we ran our system for each initial cloth configuration for a total of `--total_runs`. If you just wish to test how the system performs without a specific need to reproduce our results then you can simply set `--total_runs` as 1. We run our system for five times to account for the randomness in the LLM's responses. Log files will be generated corresponding to each test run in the `logs` directory. The evaluation results for each test runs are saved in `eval result/`. For the sake of convenience, we organised the saved directories based on the date of the program execution, configuration type etc. The results can be organised in a different directory structure by trivial changes. The mean particle position errors for all the cloth configurations across all the total runs will be saved as a 2D numpy array in `position errors/`.
+- The above script would run GPT-fabric for fabric folding corresponding to the specified `--task` for each initial cloth configuration in the saved `--cached` configurations. The choice of which GPT model do we wanna use is specified by `--gpt_model` and the `--eval_type` corresponding to *zero-shot* would correspond to the zero-shot version of GPT-Fabric for fabric folding. In our reported results, we ran our system for each initial cloth configuration for a total of `--total_runs`. If you just wish to test how the system performs without a specific need to reproduce our results then you can simply set `--total_runs` as 1. We run our system for five times to account for the randomness in the LLM's responses. Log files will be generated corresponding to each test run in the `logs` directory. The evaluation results for each test runs are saved in `eval result/`. For the sake of convenience, we organised the saved directories based on the date of the program execution, configuration type etc. The results can be organised in a different directory structure by trivial changes. The mean particle position errors for all the cloth configurations across all the total runs will be saved as a 2D numpy array in `position errors/`.
 
 - In order to save the videos of the generated simulations, you can run the script with `--save_vid` as:
     ~~~
@@ -102,6 +102,40 @@ This simulation environment is based on SoftGym. You can follow the instructions
 
 ### Getting a few expert demonstrations to perform in-context learning
 
+- In order to perform in-context learning for GPT-4V before generating instructions, we need to generate some expert demonstrations consisting of the demonstration sub-goal images
+    ~~~
+    python generate_configs.py --num_cached 100 --cloth_type square
+    python generate_configs.py --num_cached 100 --cloth_type rectangle
+    ~~~
+    The above script will generate new configurations `square100` and `rectangle100`, different from the evaluation configurations of `square` and `rectangle`.
+
+    ~~~
+    python training-examples/generate_demonstrations.py --gui --task DoubleTriangle --img_size 224 --cached square100
+    python training-examples/generate_demonstrations.py --gui --task DoubleStraight --img_size 224 --cached rectangle100
+    python training-examples/generate_demonstrations.py --gui --task AllCornersInward --img_size 224 --cached square100
+    python training-examples/generate_demonstrations.py --gui --task CornersEdgesInward --img_size 224 --cached square100
+    ~~~
+    The above script will generate expert demonstrations corresponding to the previously generated cloth configurations.
+
+- In order to perform in-context learning for GPT-4 or GPT-3.5 before generating actions, we need to [coming soon]
+
+### Performing in-context learning on GPT-Fabric
+
+- To reproduce the results obtained by GPT-Fabric (GPT-4, in-context):
+    ~~~
+    python eval.py --task DoubleTriangle --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type in-context
+    python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-4-1106-preview --cached rectangle --total_runs 5 --eval_type in-context
+    python eval.py --task ALlCornersInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type in-context
+    python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type in-context
+    ~~~
+
+- To reproduce the results obtained by GPT-Fabric (GPT-3.5, in-context):
+    ~~~
+    python eval.py --task DoubleTriangle --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
+    python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached rectangle --total_runs 5 --eval_type in-context
+    python eval.py --task ALlCornersInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
+    python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
+    ~~~
 
 ## License
 
@@ -109,7 +143,7 @@ Coming soon
 
 ## Acknowledgements
 
-Coming soon
+A lot of this code has been adapted from the repository used for [Foldsformer](https://github.com/Murkey8895/foldsformer). Feel free to check that out!
 
 ## Contact
 

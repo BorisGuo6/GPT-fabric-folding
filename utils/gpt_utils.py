@@ -39,25 +39,49 @@ RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY:
 '''
 
 gpt_v_demonstrations = {
-    "DoubleTriangle": {
-        "data": ["7", "15", "19", "29", "33"],
-        "instruction": "- Use this pair of images to guide your response",
-        "gpt-demonstrations": ["5", "15", "35", "47", "82", "23", "91", "66", "75", "59"]
+    "zero-shot":{
+        "DoubleTriangle": {
+            "data": [],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": []
+        },
+        "AllCornersInward": {
+            "data": [],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": []
+        },
+        "CornersEdgesInward": {
+            "data": [],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": []
+        },
+        "DoubleStraight": {
+            "data": [],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": []
+        }
     },
-    "AllCornersInward": {
-        "data": [],
-        "instruction": "- Use this pair of images to guide your response",
-        "gpt-demonstrations": ["4", "15", "35", "47", "82", "23", "91", "64", "75", "67"]
-    },
-    "CornersEdgesInward": {
-        "data": ["7", "15", "19", "29", "33"],
-        "instruction": "- Use this pair of images to guide your response",
-        "gpt-demonstrations": ["35", "40", "58", "67", "76", "79", "84", "92", "27", "12"]
-    },
-    "DoubleStraight": {
-        "data": ["7", "15", "19", "29", "33"],
-        "instruction": "- Use this pair of images to guide your response",
-        "gpt-demonstrations": ["4", "15", "35", "47", "82", "23", "91", "64", "75", "67"]
+    "in-context":{
+        "DoubleTriangle": {
+            "data": ["7", "15", "19", "29", "33"],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": ["5", "15", "35", "47", "82", "23", "91", "66", "75", "59"]
+        },
+        "AllCornersInward": {
+            "data": [],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": ["4", "15", "35", "47", "82", "23", "91", "64", "75", "67"]
+        },
+        "CornersEdgesInward": {
+            "data": ["7", "15", "19", "29", "33"],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": ["35", "40", "58", "67", "76", "79", "84", "92", "27", "12"]
+        },
+        "DoubleStraight": {
+            "data": ["7", "15", "19", "29", "33"],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": ["4", "15", "35", "47", "82", "23", "91", "64", "75", "67"]
+        }
     }
 }
 
@@ -130,7 +154,7 @@ def parse_output(output):
 
     return pick_point, place_point
 
-def analyze_images_gpt(image_list, task, action_id):
+def analyze_images_gpt(image_list, task, action_id, eval_type):
     '''
     This function takes the paths of the demonstration images and returns the description about what's happening
     '''
@@ -148,7 +172,7 @@ def analyze_images_gpt(image_list, task, action_id):
     second_image = encode_image(image_list[1])
 
     # Getting information corresponding to the demonstrations that we'd use
-    gpt_vision_demonstrations_local = gpt_v_demonstrations[task]
+    gpt_vision_demonstrations_local = gpt_v_demonstrations[eval_type][task]
     baseline_demo_path = os.path.join("/home/ved2311/foldsformer-baseline/data/demonstrations", task)
     demo_images_list = gpt_vision_demonstrations_local["data"]
     demonstration_dictionary_list = []
@@ -240,7 +264,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/0.png", "data/demo/CornersEdgesInward/rgbviz/1.png"], "CornersEdgesInward", 0)
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/0.png", "data/demo/CornersEdgesInward/rgbviz/1.png"], "CornersEdgesInward", 0, "zero-shot")
         response_set.add(response)
     response_list_1 = list(response_set)
     response_list_1 = sorted(response_list_1)
@@ -251,7 +275,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/1.png", "data/demo/CornersEdgesInward/rgbviz/2.png"], "CornersEdgesInward", 1)
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/1.png", "data/demo/CornersEdgesInward/rgbviz/2.png"], "CornersEdgesInward", 1, "zero-shot")
         response_set.add(response)
     response_list_2 = list(response_set)
     response_list_2 = sorted(response_list_2)
@@ -262,7 +286,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/2.png", "data/demo/CornersEdgesInward/rgbviz/3.png"], "CornersEdgesInward", 2)
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/2.png", "data/demo/CornersEdgesInward/rgbviz/3.png"], "CornersEdgesInward", 2, "zero-shot")
         response_set.add(response)
     response_list_3 = list(response_set)
     response_list_3 = sorted(response_list_3)
@@ -273,7 +297,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/3.png", "data/demo/CornersEdgesInward/rgbviz/4.png"], "CornersEdgesInward", 3)
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/3.png", "data/demo/CornersEdgesInward/rgbviz/4.png"], "CornersEdgesInward", 3, "zero-shot")
         response_set.add(response)
     response_list_4 = list(response_set)
     response_list_4 = sorted(response_list_4)

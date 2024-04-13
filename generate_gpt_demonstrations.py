@@ -10,7 +10,7 @@ from utils.visual import action_viz
 from softgym.envs.foldenv import FoldEnv
 from Demonstrator.demonstrator import Demonstrator
 from slurm_utils import find_corners, find_pixel_center_of_cloth
-from utils.gpt_utils import system_prompt, get_user_prompt, analyze_images_gpt
+from utils.gpt_utils import system_prompt, get_user_prompt
 import json
 
 def main():
@@ -516,7 +516,7 @@ def main():
             imageio.imwrite(os.path.join(save_folder_viz, str(i) + ".png"), img)
 
     # Saving the final dictionary for the current config
-    with open(os.path.join("utils/gpt-demonstrations", args.task, "demonstrations-25.json"), "w") as f:
+    with open(os.path.join("utils/gpt-demonstrations", args.task, "demonstrations.json"), "w") as f:
         json.dump(instructions_json, f, indent=4)
 
 if __name__ == "__main__":
