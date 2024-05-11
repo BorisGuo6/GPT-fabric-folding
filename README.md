@@ -78,7 +78,7 @@ This simulation environment is based on SoftGym. You can follow the instructions
     ~~~
     python eval.py --task DoubleTriangle --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type zero-shot
     python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-4-1106-preview --cached rectangle --total_runs 5 --eval_type zero-shot
-    python eval.py --task ALlCornersInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type zero-shot
+    python eval.py --task AllCornersInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type zero-shot
     python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type zero-shot
     ~~~
 
@@ -86,7 +86,7 @@ This simulation environment is based on SoftGym. You can follow the instructions
     ~~~
     python eval.py --task DoubleTriangle --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type zero-shot
     python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached rectangle --total_runs 5 --eval_type zero-shot
-    python eval.py --task ALlCornersInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type zero-shot
+    python eval.py --task AllCornersInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type zero-shot
     python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type zero-shot
     ~~~
 
@@ -125,7 +125,7 @@ This simulation environment is based on SoftGym. You can follow the instructions
     ~~~
     python eval.py --task DoubleTriangle --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type in-context
     python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-4-1106-preview --cached rectangle --total_runs 5 --eval_type in-context
-    python eval.py --task ALlCornersInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type in-context
+    python eval.py --task AllCornersInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type in-context
     python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type in-context
     ~~~
 
@@ -133,7 +133,7 @@ This simulation environment is based on SoftGym. You can follow the instructions
     ~~~
     python eval.py --task DoubleTriangle --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
     python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached rectangle --total_runs 5 --eval_type in-context
-    python eval.py --task ALlCornersInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
+    python eval.py --task AllCornersInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
     python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
     ~~~
 
