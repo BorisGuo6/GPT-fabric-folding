@@ -131,8 +131,8 @@ def parse_output(output):
     This function parses the string output returned by the LLM and returns the pick and place point coordinates that can be integrated in the code
     '''
     # Define regular expressions to match pick point and place point patterns
-    pick_point_pattern = re.compile(r'Pick Point = \((\d+), (\d+)\)')
-    place_point_pattern = re.compile(r'Place Point = \((\d+), (\d+)\)')
+    pick_point_pattern = re.compile(r'Pick Point = \((\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)')
+    place_point_pattern = re.compile(r'Place Point = \((\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)')
 
     # Use regular expressions to find matches in the text
     pick_match = pick_point_pattern.search(output)
@@ -141,14 +141,14 @@ def parse_output(output):
     # Extract x and y values for pick point
     pick_point = None
     if pick_match:
-        pick_point = np.array(tuple(map(int, pick_match.groups())))
+        pick_point = np.array(np.round(tuple(map(float, pick_match.groups())))).astype(int)
     else:
         pick_point = np.array([None, None])
 
     # Extract x and y values for place point
     place_point = None
     if place_match:
-        place_point = np.array(tuple(map(int, place_match.groups())))
+        place_point = np.array(np.round(tuple(map(float, place_match.groups())))).astype(int)
     else:
         place_point = np.array([None, None])
 

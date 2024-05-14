@@ -2,6 +2,7 @@ import argparse
 import sys
 import json
 from datetime import date, timedelta
+import time
 import numpy as np
 from softgym.envs.foldenv import FoldEnv
 from utils.visual import get_world_coord_from_pixel, action_viz, save_video
@@ -61,6 +62,7 @@ def main():
     # The date when the experiment was run
     date_today = date.today()
     obtained_scores = np.zeros((args.total_runs, env.num_configs))
+    time_array = np.zeros(env.num_configs)
 
     for run in tqdm(range(args.total_runs)):
         # Writing things to the specified log file
@@ -99,10 +101,12 @@ def main():
             image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", "0.png")
             cloth_center = find_pixel_center_of_cloth(image_path)
 
+            steps_time = np.zeros(steps)
             for i in range(steps):
                 print("------------------------------------------------------")
                 print("Currently in {} step of {} config in {} run".format(i, config_id, run))
 
+                start_time = time.time()
                 # get action based on the input asked to the user
                 if args.user_points == "user":
                     pick_str = input("Enter the pick pixel in the form [x,y]: ")
@@ -178,6 +182,9 @@ def main():
                     print("Falls back when the action is neither selected by the user or predicted by LLM")
                     exit(0)
 
+                # The time taken by the LLM to generate this particular step
+                steps_time[i] = time.time() - start_time
+                
                 # Appending the chosen pickels to the list of the pick and place pixels
                 test_pick_pixel = np.array([min(args.img_size - 1, test_pick_pixel[0]), min(args.img_size - 1, test_pick_pixel[1])])
                 test_place_pixel = np.array([min(args.img_size - 1, test_place_pixel[0]), min(args.img_size - 1, test_place_pixel[1])])
@@ -201,6 +208,9 @@ def main():
                 imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
                 imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
                 rgbs.append(rgb)
+
+            # Saving the total time taken for this particular configuration
+            time_array[config_id] = np.mean(steps_time)
 
             # Saving the final fold configuration in a pickle file
             particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
@@ -250,6 +260,9 @@ def main():
     print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
     print("The mean and standard deviation for the best scores:", np.mean(min_scores), np.std(min_scores))
     print("The mean and standard deviation for the average scores:", np.mean(average_scores), np.std(average_scores))    
+
+    # Printing the average time taken
+    print("The average time taken by GPT-fabric for each configuration is:", np.mean(time_array))
 
 if __name__ == "__main__":
     main()
