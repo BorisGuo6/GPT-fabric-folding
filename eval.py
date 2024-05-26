@@ -147,20 +147,23 @@ def main():
                         # Getting the demonstrations for in-context learning
                         indices = gpt_v_demonstrations[args.eval_type][args.task]["gpt-demonstrations"]
                         demonstration_dictionary_list = []
-                        gpt_demonstrations_path = os.path.join("utils", "gpt-demonstrations", args.task, "demonstrations.json")
-                        with open(gpt_demonstrations_path, 'r') as f:
-                            gpt_demonstrations = json.load(f)
-                        for index in indices:
-                            step_dictionary = gpt_demonstrations[str(index)][str(i + 1)]
-                            user_prompt_dictionary = {
-                                "role": "user",
-                                "content": step_dictionary["user-prompt"]
-                            }
-                            assistant_response_dictionary = {
-                                "role": "assistant",
-                                "content": step_dictionary["assistant-response"]
-                            }
-                            demonstration_dictionary_list += [user_prompt_dictionary, assistant_response_dictionary]
+
+                        # This array will be empty for zero-shot evaluation of GPT-Fabric
+                        if len(indices) != 0:
+                            gpt_demonstrations_path = os.path.join("utils", "gpt-demonstrations", args.task, "demonstrations.json")
+                            with open(gpt_demonstrations_path, 'r') as f:
+                                gpt_demonstrations = json.load(f)
+                            for index in indices:
+                                step_dictionary = gpt_demonstrations[str(index)][str(i + 1)]
+                                user_prompt_dictionary = {
+                                    "role": "user",
+                                    "content": step_dictionary["user-prompt"]
+                                }
+                                assistant_response_dictionary = {
+                                    "role": "assistant",
+                                    "content": step_dictionary["assistant-response"]
+                                }
+                                demonstration_dictionary_list += [user_prompt_dictionary, assistant_response_dictionary]
 
                         response = client.chat.completions.create(
                             model=args.gpt_model,
