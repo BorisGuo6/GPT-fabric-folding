@@ -21,7 +21,7 @@ This simulation environment is based on SoftGym. You can follow the instructions
 
 1. Clone this repository.
 
-2. Follow the [SoftGym](https://github.com/Xingyu-Lin/softgym) to create a conda environment and install PyFlex. [A nice blog](https://danieltakeshi.github.io/2021/02/20/softgym/) written by Daniel Seita may help you get started on SoftGym.
+2. Follow the [SoftGym](https://github.com/Xingyu-Lin/softgym) to create a conda environment and install PyFlex. [A nice blog](https://danieltakeshi.github.io/2021/02/20/softgym/) written by Daniel Seita on using Docker may help you get started on SoftGym.
 
 3. Install the following packages in the created conda environment:
     
@@ -43,13 +43,15 @@ This simulation environment is based on SoftGym. You can follow the instructions
 ### Getting the evaluation configurations and demonstration sub-goals
 - To get started with GPT-Fabric for folding, you will need initial cloth configurations for evaluating the system as well as demonstration sub-goals for the folding tasks which would be used by the LLM to generate instructions.
 
-- To be consistent with prior work, we use the initial evaluation configurations used by [Foldsformer](https://github.com/Murkey8895/foldsformer/tree/main?tab=readme-ov-file#evaluate-foldsformer). You can also generate configurations yourself by running
+- To be consistent with prior work, we use the initial evaluation configurations for square and rectangular shaped fabric used by [Foldsformer](https://github.com/Murkey8895/foldsformer/tree/main?tab=readme-ov-file#evaluate-foldsformer). You can find these in `cached configs/`.
+
+- You can also generate configurations yourself by running
     ~~~
     python generate_configs.py --num_cached 100 --cloth_type square
     ~~~
     where `--num_cached` specifies the number of configurations to be generated, and `--cloth_type` specifies the cloth type (square | rectangle | random). These generated initial configurations will be saved in `cached configs/`
 
-- To get the demonstration sub-goals to be used by GPT in zero-shot setting, we used the same demonstration sub-goal images as provided by [Foldsformer](https://github.com/Murkey8895/foldsformer/tree/main?tab=readme-ov-file#evaluate-foldsformer).
+- To get the demonstration sub-goals to be used by GPT in zero-shot setting, we used the same demonstration sub-goal images as provided by [Foldsformer](https://github.com/Murkey8895/foldsformer/tree/main?tab=readme-ov-file#evaluate-foldsformer). You can find these in `data/demo`.
 
 ### Getting the ground truth demonstrations for evaluation
 

@@ -66,13 +66,15 @@ def main():
 
     for run in tqdm(range(args.total_runs)):
         # Writing things to the specified log file
-        output_file_path = os.path.join("logs", args.task, args.cached, str(date_today))
-        if not os.path.exists(output_file_path):
-            os.makedirs(output_file_path)
-        output_file = os.path.join(output_file_path, str(run) + ".log")
-        sys.stdout = open(output_file, 'w', buffering=1)
+        # output_file_path = os.path.join("logs", args.task, args.cached, str(date_today))
+        # if not os.path.exists(output_file_path):
+        #     os.makedirs(output_file_path)
+        # output_file = os.path.join(output_file_path, str(run) + ".log")
+        # sys.stdout = open(output_file, 'w', buffering=1)
 
         for config_id in tqdm(range(env.num_configs)):
+            if config_id != 29:
+                continue
             rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
             depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
             if not os.path.exists(rgb_save_path):
@@ -109,6 +111,13 @@ def main():
                 start_time = time.time()
                 # get action based on the input asked to the user
                 if args.user_points == "user":
+                    # Detecting corners for the current cloth configuration
+                    image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", str(i) + ".png")
+                    cloth_corners = find_corners(image_path, False)
+
+                    # Printing the detected cloth corners
+                    print(cloth_corners)
+
                     pick_str = input("Enter the pick pixel in the form [x,y]: ")
                     test_pick_pixel = np.array(tuple(map(float, pick_str.strip("[]").split(','))))
 
@@ -120,7 +129,7 @@ def main():
                     # Detecting corners for the current cloth configuration
                     image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", str(i) + ".png")
                     cloth_corners = find_corners(image_path)
-
+                    
                     # Getting the template folding instruction images from the demonstrations
                     demo_root_path = os.path.join("data", "demo", args.task, "rgbviz")
                     start_image = os.path.join(demo_root_path, str(i) + ".png")
