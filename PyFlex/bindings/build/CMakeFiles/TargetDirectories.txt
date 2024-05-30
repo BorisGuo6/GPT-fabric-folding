@@ -1,0 +1,3 @@
+/workspace/GPT-Fabric-Folding/PyFlex/bindings/build/CMakeFiles/pyflex.dir
+/workspace/GPT-Fabric-Folding/PyFlex/bindings/build/CMakeFiles/edit_cache.dir
+/workspace/GPT-Fabric-Folding/PyFlex/bindings/build/CMakeFiles/rebuild_cache.dir
