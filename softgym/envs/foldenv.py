@@ -115,14 +115,22 @@ class FoldEnv:
             self.action_tool.step(action, step_sim_fn=self.step_simulation)
 
     def pick_and_place(self, pick_pos, place_pos, lift_height=0.1):
-        pick_pos[1] = self.grasp_height
-        place_pos[1] = self.grasp_height
-
+        print(np.shape(pick_pos))
+        print(pick_pos)
+        pick_pos[0][1] = self.grasp_height
+        pick_pos[1][1] = self.grasp_height
+        print(pick_pos)
+        place_pos[0][1] = self.grasp_height
+        place_pos[1][1] = self.grasp_height
+        print(pick_pos)
+        
         prepick_pos = pick_pos.copy()
-        prepick_pos[1] = lift_height
+        prepick_pos[0][1] = lift_height
+        prepick_pos[1][1] = lift_height
 
         preplace_pos = place_pos.copy()
-        preplace_pos[1] = lift_height
+        preplace_pos[0][1] = lift_height
+        preplace_pos[1][1] = lift_height
 
         # execute action
         self.movep(prepick_pos, speed=5e-3)

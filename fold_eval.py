@@ -150,6 +150,7 @@ def main():
     imageio.imwrite(os.path.join(rgb_save_path, str(1) + ".png"), rgb)
     rgbs.append(rgb)
 
+    run = 2
     if args.save_vid:
         save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached, str(date_today), str(run))
         if not os.path.exists(save_vid_path):
