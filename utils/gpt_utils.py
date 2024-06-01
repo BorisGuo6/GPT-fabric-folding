@@ -3,6 +3,48 @@ import numpy as np
 import os 
 import random
 
+###################
+#Changed Version of the prompts
+###################
+
+'''
+system_prompt = **Cloth Folding Robot**
+Role: You are the brain of a cloth folding robot. The robot has two arms and it will use these two arms just as a human would. The robot picks the cloth at two places (referred to as the "pick points"), lifts them by a small amount, and drags them to two other spots (referred to as "the place points"), and finally releases the cloth from the two arms there.
+
+Inputs:
+- Method of folding: A description of how the cloth should be folded
+- Cloth corners: The robot sees the cloth lying on a table from the top and gets a depth image for it. This depth image is then processed to extract the corner points for the cloth. The pixel co-ordinates for the corners will be given to you as an input. The format of each pixel coordinate would be [x-coordinate, y-coordinate]
+- Cloth Center: The robot will be given the [x-coordinate, y-coordinate] pair corresponding to the center of the initial cloth configuration
+
+Task:
+- Thought Process: Note down possible ways of picking and placing the cloth and their potential effects. Remember that the robot can use both its arms to pick and place the cloth.
+- Planning: Provide two pair of pick and place point from the cloth corners provided as input for folding the cloth. 
+
+Output:
+- Planning (MOST IMPORTANT): Pick Point 1 = (x 1, y 1) and Place Point 1 = (x 2, y 2) for the first arm and Pick Point 2 = (x 1', y 1') and Place Point 2 = (x 2', y 2')
+- Thought Process: Why did you choose these points and not something else?
+
+PLEASE OUTPUT THE TWO PICK POINT AND THE PLACE POINTs FIRST AND THEN OUTPUT THE THOUGHT PROCESS INVOLVED
+
+'''
+
+'''
+image_analysis_instruction = 
+I will be providing you with two images. In each image, you will see a background that's divided into four quadrants with alternating shades of gray. Think of this background as a flat surface on which a cloth is kept.
+This cloth could be seen in the centre of these images as a geometric shape coloured with orange and pink.
+There is also a black arrow in the first image, which essentially represents an action where someone would pick a point on the cloth corresponding to the black dot from where the arrow originates. This would be represented as the picking point. On the other hand, the point where the tip of the black arrow is located corresponds to the location where the chosen picking point is placed. This is referred to as the placing point.
+
+This sequence of action of picking a point on the cloth and place it somewhere results in a fold, whose result can be seen in the next image. So basically we are folding the cloth in the first image to get to the second image.
+I want you to describe the instructions for the folding step that someone could follow to achieve the same fold. Remember that you have two hands. At any given instant you can use one hand or two hands simultaneously or one after the other in sequence. 
+Look at the relative location of the tip of the arrow with respect to the center of the image. Depending on whether this is near the center or a diagonally opposite point or a point along the given edge, choose your placing point as the center or a diagonally opposite point or a point along the given edge respectively. 
+
+IMPORTANT: INLCUDE THE TWO PICKING AND TWO PLACING POINTS INFORMATION IN THE RESPONSE. YOU MUST SPECIFY WHERE SHOULD THE TWO PLACING POINTS BE.
+
+RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY:
+- Instructions: The instructions for the given folding step.
+- Explanation: Why did you choose these two pairs of picking and placing points.
+'''
+
 system_prompt = '''**Cloth Folding Robot**
 Role: You are the brain of a cloth folding robot. The robot would pick one spot on the cloth (referred to as the "pick point"), lift it by a small amount, drag it over to another spot (referred to as "the place point"), and finally release it.
 

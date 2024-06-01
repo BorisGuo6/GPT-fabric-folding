@@ -38,7 +38,7 @@ class FoldEnv:
     def setup_env(self):
         pyflex.init(not self.gui, True, 720, 720)
         self.action_tool = PickerPickPlace(
-            num_picker=2,
+            num_picker=1,
             particle_radius=self.particle_radius,
             picker_threshold=0.005,
             picker_low=(-10.0, 0.0, -10.0),
@@ -83,11 +83,8 @@ class FoldEnv:
         if speed is None:
             speed = 0.1
         target_pos = np.array(pos)
-        print("Target pos shape", np.shape(target_pos))
         for step in range(limit):
-            curr_pos = self.action_tool._get_pos()[0].squeeze()
-            #print("Current pos shape", np.shape(curr_pos))
-            #self.action_tool._get_pos()[0].squeeze(0)
+            curr_pos = self.action_tool._get_pos()[0].squeeze(0)
             delta = target_pos - curr_pos
             dist = np.linalg.norm(delta)
             if dist < eps and (min_steps is None or step > min_steps):
@@ -95,42 +92,22 @@ class FoldEnv:
             action = []
 
             if dist < speed:
-                t_0 = np.append(target_pos[0, :], float(self.grasp_state))
-                t_1 = np.append(target_pos[1, :], float(self.grasp_state))
-                action.extend([*t_0, *t_1])
-                print("Hi")
-                #targets = [t_0, t_1]
-                #action.extend([*target_pos, float(self.grasp_state)])
+                action.extend([*target_pos, float(self.grasp_state)])
             else:
                 delta = delta / dist
-                new_pos = curr_pos + delta * speed
-                t_0 = np.append(new_pos[0,:], float(self.grasp_state))
-                t_1 = np.append(new_pos[1,:], float(self.grasp_state))
-                action.extend([*t_0, *t_1])
-                #action.extend([*(curr_pos + delta * speed), float(self.grasp_state)])
-                #action.extend([*(curr_pos[1] + delta * speed), float(self.grasp_state)])
-                #print(action)
+                action.extend([*(curr_pos + delta * speed), float(self.grasp_state)])
             action = np.array(action)
-            #print(np.shape(action))
             self.action_tool.step(action, step_sim_fn=self.step_simulation)
 
     def pick_and_place(self, pick_pos, place_pos, lift_height=0.1):
-        print(np.shape(pick_pos))
-        print(pick_pos)
-        pick_pos[0][1] = self.grasp_height
-        pick_pos[1][1] = self.grasp_height
-        print(pick_pos)
-        place_pos[0][1] = self.grasp_height
-        place_pos[1][1] = self.grasp_height
-        print(pick_pos)
-        
+        pick_pos[1] = self.grasp_height
+        place_pos[1] = self.grasp_height
+
         prepick_pos = pick_pos.copy()
-        prepick_pos[0][1] = lift_height
-        prepick_pos[1][1] = lift_height
+        prepick_pos[1] = lift_height
 
         preplace_pos = place_pos.copy()
-        preplace_pos[0][1] = lift_height
-        preplace_pos[1][1] = lift_height
+        preplace_pos[1] = lift_height
 
         # execute action
         self.movep(prepick_pos, speed=5e-3)
@@ -143,8 +120,7 @@ class FoldEnv:
         self.movep(preplace_pos, speed=5e-3)
 
         # reset
-        print("Helloo there")
-        #self.movep(self.reset_pos, speed=5e-3)
+        self.movep(self.reset_pos, speed=5e-3)
 
     #################################################
     ###################Ground Truth###################
