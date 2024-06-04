@@ -12,7 +12,7 @@ import pyflex
 from softgym.envs.bimanual_env import BimanualEnv
 from softgym.envs.bimanual_tshirt import BimanualTshirtEnv
 
-
+'''
 class EnvRollout(object):
     def __init__(self, args):
         self.args = args
@@ -69,7 +69,7 @@ class EnvRollout(object):
         image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", "0.png")
         cloth_center = find_pixel_center_of_cloth(image_path)
         print(cloth_center)
-
+'''
         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -86,6 +86,42 @@ if __name__ == '__main__':
     parser.add_argument('--crumple_idx', help='index for crumpled initial configuration, set to -1 for no crumpling', type=int, default=-1)
     '''
     args = parser.parse_args()
+    rgb, depth = pyflex.render()
+    if 'towel' in args.cloth_type:
+        pass
+            
+        env = BimanualEnv(use_depth=True,
+                    use_cached_states=False,
+                    horizon=1,
+                    action_repeat=1,
+                    headless=args.headless,
+                    shape='default' if 'square' in args.cloth_type else 'rect')
+    elif args.cloth_type == 'tshirt':
+        pass
+        env = BimanualTshirtEnv(use_depth=True,
+                    use_cached_states=False,
+                    horizon=1,
+                    action_repeat=1,
+                    headless=args.headless)
+            
+    
+    cached_path = os.path.join("cached configs", args.cached + ".pkl")
+    date_today = date.today()
 
-    env = EnvRollout(args)
-    env.load_image(args)
+    run = 0
+    config_id = 0
+
+    rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
+    depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
+    if not os.path.exists(rgb_save_path):
+        os.makedirs(rgb_save_path)
+    if not os.path.exists(depth_save_path):
+        os.makedirs(depth_save_path)
+
+
+    # record action's pixel info
+    test_pick_pixels = []
+    test_place_pixels = []
+    rgbs = []
+    
+    

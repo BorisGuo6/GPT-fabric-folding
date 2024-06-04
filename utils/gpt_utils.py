@@ -7,8 +7,8 @@ import random
 #Changed Version of the prompts
 ###################
 
-'''
-system_prompt = **Cloth Folding Robot**
+
+system_prompt_bimanual = '''**Cloth Folding Robot**
 Role: You are the brain of a cloth folding robot. The robot has two arms and it will use these two arms just as a human would. The robot picks the cloth at two places (referred to as the "pick points"), lifts them by a small amount, and drags them to two other spots (referred to as "the place points"), and finally releases the cloth from the two arms there.
 
 Inputs:
@@ -25,6 +25,7 @@ Output:
 - Thought Process: Why did you choose these points and not something else?
 
 PLEASE OUTPUT THE TWO PICK POINT AND THE PLACE POINTs FIRST AND THEN OUTPUT THE THOUGHT PROCESS INVOLVED
+
 
 '''
 
@@ -195,6 +196,46 @@ def parse_output(output):
         place_point = np.array([None, None])
 
     return pick_point, place_point
+
+def parse_output_bimanual(output):
+    '''
+    This function parses the string output returned by the LLM and returns the pick and place point coordinates that can be integrated in the code
+    '''
+    # Define regular expressions to match pick point and place point patterns
+    pick_point_pattern_1 = re.compile(r'Pick Point 1 = \((\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)')
+    place_point_pattern_1 = re.compile(r'Place Point 1 = \((\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)')
+    
+    pick_point_pattern_2 = re.compile(r'Pick Point 2 = \((\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)')
+    place_point_pattern_2 = re.compile(r'Place Point 2 = \((\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)')
+
+    # Use regular expressions to find matches in the text
+    pick_match_1 = pick_point_pattern_1.search(output)
+    place_match_1 = place_point_pattern_1.search(output)
+    
+    pick_match_2 = pick_point_pattern_2.search(output)
+    place_match_2 = place_point_pattern_2.search(output)
+
+    # Extract x and y values for pick point
+    pick_point_1 = None
+    pick_point_2 = None
+    if pick_match_1 and pick_match_2:
+        pick_point_1 = np.array(np.round(tuple(map(float, pick_match_1.groups())))).astype(int)
+        pick_point_2 = np.array(np.round(tuple(map(float, pick_match_2.groups())))).astype(int)
+    else:
+        pick_point_1 = np.array([None, None])
+        pick_point_2 = np.array([None, None])
+
+    # Extract x and y values for place point
+    place_point = None
+    if place_match_1 and place_match_2:
+        place_point_1 = np.array(np.round(tuple(map(float, place_match_1.groups())))).astype(int)
+        place_point_2 = np.array(np.round(tuple(map(float, place_match_2.groups())))).astype(int)
+    else:
+        place_point_1 = np.array([None, None])
+        place_point_2 = np.array([None, None])
+
+    return pick_point_1, place_point_1, pick_point_2, place_point_2
+
 
 def analyze_images_gpt(image_list, task, action_id, eval_type):
     '''

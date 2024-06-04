@@ -4,14 +4,15 @@ import json
 from datetime import date, timedelta
 import time
 import numpy as np
-from softgym.envs.foldenv_bimanual import FoldEnv
+from softgym.envs.bimanual_env import BimanualEnv
+from softgym.utils.visualization import save_numpy_as_gif
 from utils.visual import get_world_coord_from_pixel, action_viz, save_video
 import pyflex
 import os
 import pickle
 from tqdm import tqdm
 import imageio
-from utils.gpt_utils import system_prompt_bimanual, get_user_prompt, parse_output_bimanual, analyze_images_gpt, gpt_v_demonstrations
+from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt, gpt_v_demonstrations
 from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error
 
@@ -19,9 +20,6 @@ from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_parti
 from softgym.registered_env import env_arg_dict, SOFTGYM_ENVS
 from softgym.utils.normalized_env import normalize
 
-from openai import OpenAI
-# TODO: Remove the Open AI api key before releasing the scripts in public
-client = OpenAI(api_key="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")
 
 def main():
     parser = argparse.ArgumentParser(description = "Bimanual Folding with GPT")
@@ -33,8 +31,6 @@ def main():
     parser.add_argument("--img_size", type=int, default=128, help="Size of rendered image")
     parser.add_argument('--save_video_dir', type=str, default='./videos/', help='Path to the saved video')
     parser.add_argument('--save_vid', action="store_true", help='Set if the video needs to be saved')
-    parser.add_argument('--inputs', type=str, default="user", help='Defines whether the pick and place points are determined by the user of llm')
-    parser.add_argument('--gpt_model', type=str, default="gpt-4", help='The version of gpt to be used')
     args = parser.parse_args()
 
     corners = args.corners
@@ -62,7 +58,12 @@ def main():
     
     '''
     
-    env = FoldEnv(cached_path, gui=args.gui, render_dim=args.img_size)
+    env = BimanualEnv(use_depth=True,
+                    use_cached_states=False,
+                    horizon=1,
+                    action_repeat=1,
+                    headless= True,
+                    shape='default')
 
     # The date when the experiment was run
     date_today = date.today()
@@ -82,11 +83,11 @@ def main():
     rgbs = []
 
     # env settings
-    env.reset(config_id=config_id)
+    env.reset()
     camera_params = env.camera_params
 
     # initial state
-    rgb, depth = env.render_image()
+    rgb, depth = env.get_rgbd()
     depth_save = depth.copy() * 255
     depth_save = depth_save.astype(np.uint8)
     imageio.imwrite(os.path.join(depth_save_path, "0.png"), depth_save)
@@ -104,52 +105,21 @@ def main():
     # Printing the detected cloth corners
     print(cloth_corners)
 
+    #frames
+    frames = [env.get_image(args.img_size, args.img_size)]
 
     #Manually input the pick and place points from the user
- 
-    if args.inputs== "user":
-        pick_str_1 = input("Enter the pick pixel in the form [x,y]: ")
-        test_pick_pixel_1 = np.array(tuple(map(float, pick_str_1.strip("[]").split(','))))
+    pick_str_1 = input("Enter the pick pixel in the form [x,y]: ")
+    test_pick_pixel_1 = np.array(tuple(map(float, pick_str_1.strip("[]").split(','))))
 
-        place_str_1 = input("Enter the place pixel in the form [x,y]: ")
-        test_place_pixel_1 = np.array(tuple(map(float, place_str_1.strip("[]").split(','))))
+    place_str_1 = input("Enter the place pixel in the form [x,y]: ")
+    test_place_pixel_1 = np.array(tuple(map(float, place_str_1.strip("[]").split(','))))
 
-        pick_str_2 = input("Enter the pick pixel in the form [x,y]: ")
-        test_pick_pixel_2 = np.array(tuple(map(float, pick_str_2.strip("[]").split(','))))
+    pick_str_2 = input("Enter the pick pixel in the form [x,y]: ")
+    test_pick_pixel_2 = np.array(tuple(map(float, pick_str_2.strip("[]").split(','))))
 
-        place_str_2 = input("Enter the place pixel in the form [x,y]: ")
-        test_place_pixel_2 = np.array(tuple(map(float, place_str_2.strip("[]").split(','))))
-        
-    elif args.inputs == "llm":
-        instructions_dict = {'DoubleStraight': "I want you to implement a double horizontal straight method of folding. Pick up the cloth along one of its top edge and fold it such that the picked up edge coincides with the opposite edge that is the bottom edge. The fold should be a horizontal fold",
-                             'CornersInward': "I want you to implement a corner inward fold. In this case all the four corners of the the cloth need to be folded inwards. For the first step choose one of the four corners and fold it towards the center such that the chosen corner coincides with the center"}
-        instruction = instructions_dict[args.task]
-        user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task, None)
-        demonstration_dictionary_list = []
-        response = client.chat.completions.create(
-                            model=args.gpt_model,
-                            messages=[
-                                {
-                                    "role": "system",
-                                    "content": system_prompt_bimanual
-                                }] + demonstration_dictionary_list +
-                                [{
-                                    "role": "user",
-                                    "content": user_prompt
-                                }],
-                            temperature=0,
-                            max_tokens=769,
-                            top_p=1,
-                            frequency_penalty=0,
-                            presence_penalty=0
-                        )
-        print(response)
-        print("\n \n")
-        print(response.choices[0].message.content)
-        test_pick_pixel_1, test_place_pixel_1, test_pick_pixel_2, test_place_pixel_2 = parse_output_bimanual(response.choices[0].message.content)
-        #print(pi1, pl1, pi2, pl2)
-    else:
-        print("Your argument is invalid")
+    place_str_2 = input("Enter the place pixel in the form [x,y]: ")
+    test_place_pixel_2 = np.array(tuple(map(float, place_str_2.strip("[]").split(','))))
 
     # Appending the chosen pickels to the list of the pick and place pixels
     test_pick_pixel_1 = np.array([min(args.img_size - 1, test_pick_pixel_1[0]), min(args.img_size - 1, test_pick_pixel_1[1])])
@@ -177,24 +147,37 @@ def main():
     test_pick_pos = np.vstack((test_pick_pos_1, test_pick_pos_2))
     test_place_pos = np.vstack((test_place_pos_1, test_place_pos_2))
     
-    #print(np.shape(test_pick_pos))
+    print(test_pick_pos)
     # pick & place
-    env.pick_and_place(test_pick_pos.copy(), test_place_pos.copy())
+    curr_picker_pos=env.action_tool._get_pos()[0].squeeze()
+    print(curr_picker_pos)
+    
+    #env.pick_and_place(test_pick_pos.copy(), test_place_pos.copy())
+    val = env.picker_step(test_pick_pos.copy(), pick=True)
+    frames.extend(val)
 
-    rgb, depth = env.render_image()
+    rgb, depth = env.get_rgbd()
     depth_save = depth.copy() * 255
     depth_save = depth_save.astype(np.uint8)
     imageio.imwrite(os.path.join(depth_save_path, str(1) + ".png"), depth_save)
     imageio.imwrite(os.path.join(rgb_save_path, str(1) + ".png"), rgb)
     rgbs.append(rgb)
 
-    run = 25_1
+    run = 2
+    if args.save_vid:
+        save_name = os.path.join("new", "bimanual" + '_new2.gif')
+        save_numpy_as_gif(np.array(frames), save_name)
+        print('Video generated and save to {}'.format(save_name))
+         
+
+    
+    '''
     if args.save_vid:
         save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached, str(date_today), str(run))
         if not os.path.exists(save_vid_path):
                 os.makedirs(save_vid_path)
         save_video(env.rgb_array, os.path.join(save_vid_path, str(config_id)))
-
-
+    '''
+    
 if __name__ == "__main__":
     main()

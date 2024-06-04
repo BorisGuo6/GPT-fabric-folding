@@ -371,5 +371,30 @@ class BimanualEnv(FlexEnv):
 
         pyflex.step()
 
+    def picker_step(self,target_pos,pick=False,record=True):
+        """
+        The function for moving the picker to the target position.
+            target_pos: the target position
+            pick: whether to pick (hold) the object
+            record: whether to record the continuous video
+            
+        """
+        curr_picker_pos=self.action_tool._get_pos()[0].squeeze()
+        #rint(np.shape(self.env.action_tool.get_picker_pos()), "HI")
+        target_pos=target_pos.squeeze()
+        picker_translation=(target_pos-curr_picker_pos)
+        print(np.shape(picker_translation))
+        picker_action_0=np.append(picker_translation[0, :],1 if pick else 0)
+        picker_action_1=np.append(picker_translation[1, :],1 if pick else 0)
+        picker_action = np.hstack((picker_action_0, picker_action_1))
+        print(np.shape(picker_action), "HI")
+        # print(picker_action)
+        
+        _, _, _, info=self.step(picker_action,record_continuous_video=True,img_size=128)
+        if record:
+            return info['flex_env_recorded_frames']
+        else:
+            return None
+
     def _get_info(self):
         return {}
