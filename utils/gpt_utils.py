@@ -173,7 +173,13 @@ def analyze_images_gpt(image_list, task, action_id, eval_type, gpt_vision_model)
 
     # Getting information corresponding to the demonstrations that we'd use
     gpt_vision_demonstrations_local = gpt_v_demonstrations[eval_type][task]
-    baseline_demo_path = os.path.join("/home/ved2311/foldsformer-baseline/data/demonstrations", task)
+
+    # Getting the path to the in-context learning demonstrations for the model to analyze images better
+    script_path = os.path.abspath(__file__)
+    script_directory = os.path.dirname(script_path)
+    parent_directory = os.path.dirname(script_directory)
+    baseline_demo_path = os.path.join(parent_directory, "data", "gpt-4v-incontext-demonstrations", task)
+
     demo_images_list = gpt_vision_demonstrations_local["data"]
     demonstration_dictionary_list = []
     for demo_image_id in demo_images_list:
