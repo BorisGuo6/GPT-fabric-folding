@@ -44,6 +44,9 @@ def main():
     parser.add_argument('--eval_type', type=str, default='in-context', help='Choose one of [zero-shot | in-context | fine-tuned] for GPT-Fabric')
     args = parser.parse_args()
 
+    # IMPORTANT - This model will get deprecated on Dec 6, 2024. Kindly use any newer OpenAI models with vision reasoning abilities
+    gpt_vision_model = "gpt-4-vision-preview"
+
     # task
     task = args.task
     if task == "CornersEdgesInward":
@@ -134,7 +137,7 @@ def main():
                     last_image = os.path.join(demo_root_path, str(i+1) + ".png")
 
                     # Generating the instruction by analyzing the images
-                    instruction = analyze_images_gpt([start_image, last_image], args.task, i, args.eval_type)
+                    instruction = analyze_images_gpt([start_image, last_image], args.task, i, args.eval_type, gpt_vision_model)
 
                     no_output = True
                     while no_output:

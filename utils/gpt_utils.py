@@ -154,7 +154,7 @@ def parse_output(output):
 
     return pick_point, place_point
 
-def analyze_images_gpt(image_list, task, action_id, eval_type):
+def analyze_images_gpt(image_list, task, action_id, eval_type, gpt_vision_model):
     '''
     This function takes the paths of the demonstration images and returns the description about what's happening
     '''
@@ -214,7 +214,7 @@ def analyze_images_gpt(image_list, task, action_id, eval_type):
     instruction = ""
     while instruction == "":
         payload = {
-            "model": "gpt-4-vision-preview",
+            "model": gpt_vision_model,
             "messages": [
                 {
                     "role": "system",
@@ -264,7 +264,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/0.png", "data/demo/CornersEdgesInward/rgbviz/1.png"], "CornersEdgesInward", 0, "zero-shot")
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/0.png", "data/demo/CornersEdgesInward/rgbviz/1.png"], "CornersEdgesInward", 0, "zero-shot", gpt_vision_model="gpt-4-vision-preview")
         response_set.add(response)
     response_list_1 = list(response_set)
     response_list_1 = sorted(response_list_1)
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/1.png", "data/demo/CornersEdgesInward/rgbviz/2.png"], "CornersEdgesInward", 1, "zero-shot")
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/1.png", "data/demo/CornersEdgesInward/rgbviz/2.png"], "CornersEdgesInward", 1, "zero-shot", gpt_vision_model="gpt-4-vision-preview")
         response_set.add(response)
     response_list_2 = list(response_set)
     response_list_2 = sorted(response_list_2)
@@ -286,7 +286,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/2.png", "data/demo/CornersEdgesInward/rgbviz/3.png"], "CornersEdgesInward", 2, "zero-shot")
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/2.png", "data/demo/CornersEdgesInward/rgbviz/3.png"], "CornersEdgesInward", 2, "zero-shot", gpt_vision_model="gpt-4-vision-preview")
         response_set.add(response)
     response_list_3 = list(response_set)
     response_list_3 = sorted(response_list_3)
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     response_set = set()
     for i in range(20):
         print(i)
-        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/3.png", "data/demo/CornersEdgesInward/rgbviz/4.png"], "CornersEdgesInward", 3, "zero-shot")
+        response = analyze_images_gpt(["data/demo/CornersEdgesInward/rgbviz/3.png", "data/demo/CornersEdgesInward/rgbviz/4.png"], "CornersEdgesInward", 3, "zero-shot", gpt_vision_model="gpt-4-vision-preview")
         response_set.add(response)
     response_list_4 = list(response_set)
     response_list_4 = sorted(response_list_4)

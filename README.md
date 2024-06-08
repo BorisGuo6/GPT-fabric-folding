@@ -7,6 +7,8 @@ This repository is a python implementation of the paper "GPT-Fabric: Folding and
 
 [Website](https://sites.google.com/usc.edu/gpt-fabrics/home) | [ArXiv: Coming soon]()
 
+**Important Update: According to OpenAI, some of the model checkpoints used by us during our experiments (for instance - *gpt-4-vision-preview*) is going to be deprecated. It is encouraged to use the recent models from OpenAI instead**
+
 ## Table of Contents
 * [Installation](#installation)
 * [Pre-requisites](#pre-requisites)

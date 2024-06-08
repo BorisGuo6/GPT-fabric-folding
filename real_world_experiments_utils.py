@@ -113,6 +113,9 @@ def gpt_for_real_world(input_rgb, input_depth, cropped_depth_image, cloth_center
     # TODO: Remove the API keys before releasing the code in public
     client = OpenAI(api_key="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")
 
+    # IMPORTANT - This model will get deprecated on Dec 6, 2024. Kindly use any newer OpenAI models with vision reasoning abilities
+    gpt_vision_model = "gpt-4-vision-preview"
+
     # Crop the input RGB and Depth images to get the cropped version of theirs
     pivot_coordinate = crop_input_image(input_rgb, input_depth, cropped_depth_image)
 
@@ -126,7 +129,7 @@ def gpt_for_real_world(input_rgb, input_depth, cropped_depth_image, cloth_center
     demo_root_path = os.path.join("data", "demo", task, "rgbviz")
     start_image = os.path.join(demo_root_path, str(current_step) + ".png")
     last_image = os.path.join(demo_root_path, str(current_step+1) + ".png")
-    instruction = analyze_images_gpt([start_image, last_image], task, current_step, "in-context")
+    instruction = analyze_images_gpt([start_image, last_image], task, current_step, "in-context", gpt_vision_model)
 
     # Getting the user prompt based on the information that we have so far
     user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, task, None)
