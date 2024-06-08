@@ -70,12 +70,6 @@ This simulation environment is based on SoftGym. You can follow the instructions
 
 - For each cloth configuration, `0.png` is the top-down image corresponding to the initial state. `{step#}-{fold#}.png` is the top-down image corresponding to the given step number `{step#}` for the given specifgic way of achieving the successful fold represented as `{fold#}`. The final cloth configuration will be saved as a pickle file given as `info-{fold#}.pkl`. TO compute the mean particle position error (in mm) for evaluation, we consider the distances for all the possible final cloth configurations from the acheived final cloth configuration by GPT-Fabric and take the minimum of those.
 
-- These are the total number of possible folding steps and total possible ways of successfully folding the same initial cloth for the folding types considered by us
-    - DoubleTriangle: 8 possible ways of folding, each taking two steps
-    - DoubleStraight: 16 possible ways of folding, each taking three steps
-    - AllCornersInward: 1 possible ways of folding, each taking four steps
-    - CornersEdgesInward: 16 possible ways of folding, each taking four steps
-
 ## Evaluating GPT-Fabric in zero-shot setting
 
 - To reproduce the results obtained by GPT-Fabric (GPT-4, zero-shot):

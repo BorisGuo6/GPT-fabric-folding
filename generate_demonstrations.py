@@ -91,9 +91,12 @@ def main():
             pick_idxs = np.arange(4)
             curr_corners = env.get_corners()
             center = env.get_center()
-            for ind in range(1):
+            for ind in range(9):
                 for (i, pick_idx) in enumerate(pick_idxs):
-                    pick_pos, place_pos = demonstrator.get_action(curr_corners, center, pick_idx)
+                    center_place = False
+                    if ind == 8:
+                        center_place = True
+                    pick_pos, place_pos = demonstrator.get_action(curr_corners, center, pick_idx, center_place)
                     pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
                     place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
                     env.pick_and_place(pick_pos.copy(), place_pos.copy())

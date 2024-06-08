@@ -92,7 +92,7 @@ def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, task, co
     if task == "DoubleTriangle":
         num_info = 8
     elif task == "AllCornersInward":
-        num_info = 1
+        num_info = 9
     elif task == "DoubleStraight":
         num_info = 16
     else:

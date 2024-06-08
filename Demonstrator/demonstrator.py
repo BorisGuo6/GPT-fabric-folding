@@ -25,9 +25,12 @@ class AllCornersInward:
     def __init__(self):
         self.gamma = [0.9, 0.95, 1.0]
 
-    def get_action(self, curr_corners, center, pick_idx):
+    def get_action(self, curr_corners, center, pick_idx, center_place):
         pick_pos = curr_corners[pick_idx]
-        place_pos = pick_pos + self.gamma[2] * (center - pick_pos)
+        
+        options = [0, 1, 2]
+        gamma_index = 2 if center_place else random.choice(options)
+        place_pos = pick_pos + self.gamma[gamma_index] * (center - pick_pos)
 
         return pick_pos, place_pos
 
