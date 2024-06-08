@@ -1,0 +1,10 @@
+Pick the cloth at the point indicated by the black dot and fold it diagonally across to the opposite edge of the cloth, aligning it with the edge that runs parallel to the fold direction
+Pick the cloth at the point indicated by the black dot and fold it diagonally across to the opposite edge of the cloth, aligning the picking point with the edge
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the background, aligning it with the tip of the black arrow
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the background, placing it at the center point of the image
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the background, placing it at the point where the tip of the arrow is located
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the background, placing the picked point at the center
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the background, placing the point at the center as well
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the image, placing the picked point at the center
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the image, placing the picking point at the center
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the image, placing the point at the center to achieve the fold shown in the second image

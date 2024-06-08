@@ -1,0 +1,17 @@
+Pick the cloth at the black dot located at the bottom right corner of the orange shape. Fold it diagonally across the shape and place it at the center of the image, aligning it with the center of the pink shape
+Pick the cloth at the black dot located on the orange section near the bottom right corner of the image. Fold the cloth by bringing this point to the center of the image, aligning it with the center of the cross where the different shades of gray intersect
+Pick the cloth at the point indicated by the black dot and fold it diagonally across to place it at the center of the image
+Pick the cloth at the point indicated by the black dot and fold it diagonally across to the opposite edge of the cloth, aligning it with the center of the image
+Pick the cloth at the point indicated by the black dot and fold it diagonally across to the opposite edge of the cloth, aligning the picking point with the center of the cloth
+Pick the cloth at the point indicated by the black dot and fold it diagonally across to the opposite edge, aligning the picking point with the center of the image
+Pick the cloth at the point indicated by the black dot and fold it towards the center of the image, placing the picked point exactly at the center
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the cloth. Fold the cloth by bringing this point to the center of the background, aligning it with the center of the image where the quadrants intersect
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the cloth. Fold the cloth by bringing this point to the center of the background, aligning it with the intersection of the diagonals of the quadrants
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the cloth. Fold the cloth by bringing this point to the center of the image, aligning it with the center of the cloth where the diagonals intersect
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the cloth. Fold the cloth diagonally by bringing this picking point to the center of the quadrants on the background
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the cloth. Then, fold the cloth by bringing this point to the center of the image, aligning it with the center of the cloth where the diagonals intersect
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the cloth. Then, fold the cloth by placing this point at the center of the background quadrants
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the cloth. Then, fold the cloth by placing this point at the center of the quadrants on the background
+Pick the cloth at the point indicated by the black dot at the bottom right corner of the orange section. Fold the cloth by bringing this point to the center of the image, aligning it with the intersection of the diagonals of the background quadrants
+Pick the cloth at the point indicated by the black dot on the orange quadrant. Fold the cloth by bringing this picking point to the center of the image, aligning it with the center of the cloth where all the lines intersect
+Pick the cloth at the point indicated by the black dot. Fold the cloth by bringing this point to the center of the background, aligning it with the center of the image where the quadrants intersect
