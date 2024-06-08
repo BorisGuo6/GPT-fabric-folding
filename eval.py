@@ -16,8 +16,8 @@ from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error
 
 from openai import OpenAI
-# TODO: Remove the Open AI api key before releasing the scripts in public
-client = OpenAI(api_key="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")
+# TODO: Use your own API key for performing the experiments
+client = OpenAI(api_key="api_key")
 
 def get_mask(depth):
     mask = depth.copy()

@@ -110,8 +110,8 @@ def gpt_for_real_world(input_rgb, input_depth, cropped_depth_image, cloth_center
         current_step: The number of folding steps executed for the current test case thus far (starts with 0)
     '''
     # Setting up the chain to interact with OpenAI. Using Daniel's API key for now
-    # TODO: Remove the API keys before releasing the code in public
-    client = OpenAI(api_key="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")
+    # TODO: Use your own API key for performing the experiments
+    client = OpenAI(api_key="api_key")
 
     # IMPORTANT - This model will get deprecated on Dec 6, 2024. Kindly use any newer OpenAI models with vision reasoning abilities
     gpt_vision_model = "gpt-4-vision-preview"

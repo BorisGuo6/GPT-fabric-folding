@@ -169,8 +169,8 @@ def analyze_images_gpt(image_list, task, action_id, eval_type, gpt_vision_model)
     '''
     import base64
     import requests
-    # TODO - Remove the API key before making the code public
-    api_key="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"
+    # TODO: Use your own API key for performing the experiments
+    api_key="api_key"
 
     # Function to encode image
     def encode_image(image_path):
