@@ -141,10 +141,6 @@ This simulation environment is based on SoftGym. You can follow the instructions
     python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-3.5-turbo-0125 --cached square --total_runs 5 --eval_type in-context
     ~~~
 
-## License
-
-Coming soon
-
 ## Acknowledgements
 
 A lot of this code has been adapted from the repository used for [Foldsformer](https://github.com/Murkey8895/foldsformer). Feel free to check that out!
