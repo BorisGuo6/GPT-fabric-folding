@@ -11,13 +11,14 @@ import os
 import pickle
 from tqdm import tqdm
 import imageio
-from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt, gpt_v_demonstrations
+from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt, gpt_v_demonstrations, set_of_marks
 from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error
+from cv2 import imwrite
 
 from openai import OpenAI
 # TODO: Remove the Open AI api key before releasing the scripts in public
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="sk-proj-gpjnKOl4bOwfXhGQQfbVT3BlbkFJUe0DAyVZTe1G6oKNubnD")
 
 def get_mask(depth):
     mask = depth.copy()
@@ -66,15 +67,15 @@ def main():
 
     for run in tqdm(range(args.total_runs)):
         # Writing things to the specified log file
-        # output_file_path = os.path.join("logs", args.task, args.cached, str(date_today))
-        # if not os.path.exists(output_file_path):
-        #     os.makedirs(output_file_path)
-        # output_file = os.path.join(output_file_path, str(run) + ".log")
-        # sys.stdout = open(output_file, 'w', buffering=1)
+        output_file_path = os.path.join("logs", args.task, args.cached, str(date_today))
+        #if not os.path.exists(output_file_path):
+        #   os.makedirs(output_file_path)
+        #output_file = os.path.join(output_file_path, str(run) + ".log")
+        #sys.stdout = open(output_file, 'w', buffering=1)
 
         for config_id in tqdm(range(env.num_configs)):
-            #if config_id != 29:
-            #continue
+            if config_id != 29:
+               continue
             rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
             depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
             if not os.path.exists(rgb_save_path):
@@ -114,6 +115,8 @@ def main():
                     # Detecting corners for the current cloth configuration
                     image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", str(i) + ".png")
                     cloth_corners = find_corners(image_path, False)
+                    print(np.shape(cloth_corners))
+                    print(np.shape(cloth_corners.squeeze))
 
                     # Printing the detected cloth corners
                     print(cloth_corners)
@@ -128,15 +131,32 @@ def main():
                 elif args.user_points == "llm":
                     # Detecting corners for the current cloth configuration
                     image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", str(i) + ".png")
-                    cloth_corners = find_corners(image_path)
+                    cloth_corners = find_corners(image_path).squeeze()
                     
                     # Getting the template folding instruction images from the demonstrations
+                    
                     demo_root_path = os.path.join("data", "demo", args.task, "rgbviz")
                     start_image = os.path.join(demo_root_path, str(i) + ".png")
+                    
+                
+                    '''depth_root_path = os.path.join("data", "demo", args.task, "depth")
+                    
+                    start_image_corners = find_corners(os.path.join(depth_root_path, str(i) + ".png")).squeeze()
+                    start_image = set_of_marks(start_image, start_image_corners, center = None, regions = True)
+                    start_path = "/home/rajeshgayathri2003/GPT-fabric-folding/start_image.png"
+                    imwrite(start_path, start_image)'''
+
                     last_image = os.path.join(demo_root_path, str(i+1) + ".png")
+                    ######Gayathri's Changes######
+                    '''
+                    last_image_corners = find_corners(os.path.join(depth_root_path, str(i+1) + ".png")).squeeze()
+                    last_image = set_of_marks(last_image, last_image_corners, center = None, regions = False)
+                    last_path = "/home/rajeshgayathri2003/GPT-fabric-folding/last_image.png"
+                    imwrite(last_path, last_image)'''
 
                     # Generating the instruction by analyzing the images
                     instruction = analyze_images_gpt([start_image, last_image], args.task, i, args.eval_type)
+                    print(instruction)
 
                     no_output = True
                     while no_output:

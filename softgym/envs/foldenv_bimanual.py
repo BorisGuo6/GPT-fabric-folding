@@ -28,7 +28,6 @@ class FoldEnv:
         self.grasp_height = self.action_tool.picker_radius
         self.default_speed = 1e-2
         self.reset_pos = [0.5, 0.5, 0.5]
-
         # configs
         with open(cached_path, "rb") as handle:
             self.configs, self.init_states = pickle.load(handle)
@@ -141,10 +140,12 @@ class FoldEnv:
         self.movep(place_pos, speed=5e-3)
         self.set_grasp(False)
         self.movep(preplace_pos, speed=5e-3)
+        print(preplace_pos)
 
         # reset
         print("Helloo there")
-        #self.movep(self.reset_pos, speed=5e-3)
+        reset_pos = np.array([[0.5, 0.5, 0.5], [0.5, 0.5, 0.5]])
+        self.movep(reset_pos, speed=5e-3)
 
     #################################################
     ###################Ground Truth###################
