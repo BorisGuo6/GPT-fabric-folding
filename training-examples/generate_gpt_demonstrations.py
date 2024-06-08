@@ -21,15 +21,20 @@ def main():
     parser.add_argument("--cached", type=str, help="Cached filename")
     args = parser.parse_args()
 
+    # Getting the path to the root directory
+    script_path = os.path.abspath(__file__)
+    script_directory = os.path.dirname(script_path)
+    parent_directory = os.path.dirname(script_directory)
+
     # env settings
-    cached_path = os.path.join("cached configs", args.cached + ".pkl")
+    cached_path = os.path.join(parent_directory, "cached configs", args.cached + ".pkl")
     env = FoldEnv(cached_path, gui=args.gui, render_dim=args.img_size)
 
     # demonstrator settings
     demonstrator = Demonstrator[args.task]()
 
     # save settings
-    save_path = os.path.join("data", "gpt-demonstrations", args.task, args.cached, str(args.img_size))
+    save_path = os.path.join(parent_directory, "data", "gpt-demonstrations", args.task, args.cached, str(args.img_size))
     os.makedirs(save_path, exist_ok=True)
 
     # other settings
@@ -516,7 +521,7 @@ def main():
             imageio.imwrite(os.path.join(save_folder_viz, str(i) + ".png"), img)
 
     # Saving the final dictionary for the current config
-    with open(os.path.join("utils/gpt-demonstrations", args.task, "demonstrations.json"), "w") as f:
+    with open(os.path.join(parent_directory, "utils", "gpt-demonstrations", args.task, "demonstrations.json"), "w") as f:
         json.dump(instructions_json, f, indent=4)
 
 if __name__ == "__main__":
