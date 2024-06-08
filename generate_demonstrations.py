@@ -91,7 +91,7 @@ def main():
             pick_idxs = np.arange(4)
             curr_corners = env.get_corners()
             center = env.get_center()
-            for ind in range(8,9):
+            for ind in range(1):
                 for (i, pick_idx) in enumerate(pick_idxs):
                     pick_pos, place_pos = demonstrator.get_action(curr_corners, center, pick_idx)
                     pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
