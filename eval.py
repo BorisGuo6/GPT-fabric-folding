@@ -66,15 +66,13 @@ def main():
 
     for run in tqdm(range(args.total_runs)):
         # Writing things to the specified log file
-        # output_file_path = os.path.join("logs", args.task, args.cached, str(date_today))
-        # if not os.path.exists(output_file_path):
-        #     os.makedirs(output_file_path)
-        # output_file = os.path.join(output_file_path, str(run) + ".log")
-        # sys.stdout = open(output_file, 'w', buffering=1)
+        output_file_path = os.path.join("logs", args.task, args.cached, str(date_today))
+        if not os.path.exists(output_file_path):
+            os.makedirs(output_file_path)
+        output_file = os.path.join(output_file_path, str(run) + ".log")
+        sys.stdout = open(output_file, 'w', buffering=1)
 
         for config_id in tqdm(range(env.num_configs)):
-            if config_id != 29:
-                continue
             rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
             depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
             if not os.path.exists(rgb_save_path):
@@ -270,8 +268,9 @@ def main():
     
     # Printing the final values out
     print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-    print("The mean and standard deviation for the best scores:", np.mean(min_scores), np.std(min_scores))
-    print("The mean and standard deviation for the average scores:", np.mean(average_scores), np.std(average_scores))    
+    # Note - We do not need to return the cherry picked scores anymore. So reverting that.
+    # print("The mean and standard deviation for the best scores:", np.mean(min_scores), np.std(min_scores))
+    print("The mean and standard deviation for the mean particle distance errors (mm):", np.mean(average_scores) * 1000, np.std(average_scores) * 1000)    
 
     # Printing the average time taken
     print("The average time taken by GPT-fabric for each configuration is:", np.mean(time_array))

@@ -147,8 +147,8 @@ def get_test_run_stats(parent_eval_dir, parent_expert_dir, cached_path, task):
         avg_list[config] = np.mean(all_scores[:, config])
     
     # Printing the stats reported
-    print("Mean and Std dev for the min values: ", np.mean(min_list) * 1000, np.std(min_list) * 1000)
-    print("Mean and Std dev for the mean values: ", np.mean(avg_list) * 1000, np.std(avg_list) * 1000)
+    print("Mean and Std dev for the min values(mm): ", np.mean(min_list) * 1000, np.std(min_list) * 1000)
+    print("Mean and Std dev for the mean values(mm): ", np.mean(avg_list) * 1000, np.std(avg_list) * 1000)
 
 if __name__ == "__main__":
     get_test_run_stats("eval result/CornersEdgesInward/square/2024-02-26", "data/demonstrations/CornersEdgesInward/square", "cached configs/square.pkl", "CornersEdgesInward")
