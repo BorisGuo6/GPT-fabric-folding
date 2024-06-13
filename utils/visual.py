@@ -76,6 +76,7 @@ def get_world_coord_from_pixel(pixel, depth, camera_params):
     cam_coord = np.ones(4)
     cam_coord[:3] = (x, y, z)
     world_coord = matrix_camera_to_world @ cam_coord
+    print(type(world_coord))
 
     return world_coord[:3]
 

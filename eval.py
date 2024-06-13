@@ -74,8 +74,8 @@ def main():
         #sys.stdout = open(output_file, 'w', buffering=1)
 
         for config_id in tqdm(range(env.num_configs)):
-            if config_id != 29:
-               continue
+            #if config_id != 29:
+            #   continue
             rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
             depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
             if not os.path.exists(rgb_save_path):
@@ -105,6 +105,8 @@ def main():
             cloth_center = find_pixel_center_of_cloth(image_path)
 
             steps_time = np.zeros(steps)
+            #########
+            steps = 1
             for i in range(steps):
                 print("------------------------------------------------------")
                 print("Currently in {} step of {} config in {} run".format(i, config_id, run))
@@ -136,9 +138,9 @@ def main():
                     # Getting the template folding instruction images from the demonstrations
                     
                     demo_root_path = os.path.join("data", "demo", args.task, "rgbviz")
-                    start_image = os.path.join(demo_root_path, str(i) + ".png")
+                    #start_image = os.path.join(demo_root_path, str(i) + ".png")
+                    start_image = "/home/rajeshgayathri2003/GPT-fabric-folding/goals/square_towel/start.png"
                     
-                
                     '''depth_root_path = os.path.join("data", "demo", args.task, "depth")
                     
                     start_image_corners = find_corners(os.path.join(depth_root_path, str(i) + ".png")).squeeze()
@@ -146,7 +148,8 @@ def main():
                     start_path = "/home/rajeshgayathri2003/GPT-fabric-folding/start_image.png"
                     imwrite(start_path, start_image)'''
 
-                    last_image = os.path.join(demo_root_path, str(i+1) + ".png")
+                    #last_image = os.path.join(demo_root_path, str(i+1) + ".png")
+                    last_image = "/home/rajeshgayathri2003/GPT-fabric-folding/test_goal_21.png"
                     ######Gayathri's Changes######
                     '''
                     last_image_corners = find_corners(os.path.join(depth_root_path, str(i+1) + ".png")).squeeze()

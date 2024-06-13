@@ -1,0 +1,71 @@
+# Step 1: First Diagonal Fold
+
+The first step is to fold the cloth along its diagonal. This means we need to bring one of the top corners to one of the bottom corners on the opposite side. 
+
+Let's start by identifying the corners and the center of the cloth.
+
+```python
+# Identify the corners and center of the cloth
+corners = find_corners(image_path, should_crop=True)
+center = find_pixel_center_of_cloth(image_path, should_crop=True)
+```
+
+Now, let's identify the pick point and place point for the first fold. We will pick the top left corner and place it on the bottom right corner.
+
+```python
+# Identify the pick point and place point for the first fold
+pick_point_1 = corners[0]  # Top left corner
+place_point_1 = corners[3]  # Bottom right corner
+```
+
+Next, we need to convert these 2D points into 3D coordinates.
+
+```python
+# Convert the 2D points into 3D coordinates
+pick_point_1_3D = get_world_coord_from_pixel(pick_point_1, depth, camera_params)
+place_point_1_3D = get_world_coord_from_pixel(place_point_1, depth, camera_params)
+```
+
+Finally, we can perform the first fold.
+
+```python
+# Perform the first fold
+pick_and_place(pick_point_1_3D, place_point_1_3D, lift_height)
+```
+
+# Step 2: Second Diagonal Fold
+
+The second step is to fold the triangle along its longest side. This means we need to bring one of the top corners to the bottom corner on the opposite side. 
+
+Again, let's start by identifying the corners and the center of the cloth.
+
+```python
+# Identify the corners and center of the cloth
+corners = find_corners(image_path, should_crop=True)
+center = find_pixel_center_of_cloth(image_path, should_crop=True)
+```
+
+Now, let's identify the pick point and place point for the second fold. We will pick the top left corner and place it on the bottom right corner.
+
+```python
+# Identify the pick point and place point for the second fold
+pick_point_2 = corners[0]  # Top left corner
+place_point_2 = corners[2]  # Bottom right corner
+```
+
+Next, we need to convert these 2D points into 3D coordinates.
+
+```python
+# Convert the 2D points into 3D coordinates
+pick_point_2_3D = get_world_coord_from_pixel(pick_point_2, depth, camera_params)
+place_point_2_3D = get_world_coord_from_pixel(place_point_2, depth, camera_params)
+```
+
+Finally, we can perform the second fold.
+
+```python
+# Perform the second fold
+pick_and_place(pick_point_2_3D, place_point_2_3D, lift_height)
+```
+
+This completes the double triangle fold.

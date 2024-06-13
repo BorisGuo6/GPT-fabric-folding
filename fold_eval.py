@@ -207,6 +207,8 @@ def main():
             test_pick_pixels.append(test_pick_pixel_1)
             test_place_pixels.append(test_place_pixel_1)
 
+            print(type(depth))
+            print(type(camera_params))
             test_pick_pos_1 = get_world_coord_from_pixel(test_pick_pixel_1, depth, camera_params)
             test_place_pos_1= get_world_coord_from_pixel(test_place_pixel_1, depth, camera_params)
 
