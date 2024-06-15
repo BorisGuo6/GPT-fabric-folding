@@ -4,6 +4,7 @@ import cv2
 import os
 from matplotlib import pyplot as plt 
 import pickle
+import imageio
 
 def save_depth_as_matrix(image_path, output_path = None, save_matrix = True, should_crop = True):
     '''
@@ -47,6 +48,7 @@ def find_corners(image_path, should_crop = True):
     '''
     This function will use the OpenCV methods to detect the cloth corners from the given depth image
     '''
+    print(image_path)
     image_matrix = save_depth_as_matrix(image_path, None, False, should_crop)
     cv2.imwrite("./to_be_deleted.png", image_matrix)
 
@@ -66,7 +68,7 @@ def find_corners(image_path, should_crop = True):
         plt.savefig("temp.png")
 
     os.remove("./to_be_deleted.png")
-    return corner_coordinates
+    return corner_coordinates.squeeze()
 
 def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, task, config_id):
     '''
@@ -145,10 +147,18 @@ def get_test_run_stats(parent_eval_dir, parent_expert_dir, cached_path, task):
     for config in range(num_configs):
         min_list[config] = np.min(all_scores[:, config])
         avg_list[config] = np.mean(all_scores[:, config])
-    
+        
     # Printing the stats reported
     print("Mean and Std dev for the min values: ", np.mean(min_list) * 1000, np.std(min_list) * 1000)
     print("Mean and Std dev for the mean values: ", np.mean(avg_list) * 1000, np.std(avg_list) * 1000)
+    
+def append_pixels_to_list(img_size, test_pick_pixel, test_place_pixel, test_pick_pixels = [], test_place_pixels=[]):
+    test_pick_pixel = np.array([min(img_size - 1, test_pick_pixel[0]), min(img_size - 1, test_pick_pixel[1])])
+    test_place_pixel = np.array([min(img_size - 1, test_place_pixel[0]), min(img_size - 1, test_place_pixel[1])])
+    test_pick_pixels.append(test_pick_pixel)
+    test_place_pixels.append(test_place_pixel)
+    
+    
 
 if __name__ == "__main__":
     get_test_run_stats("eval result/CornersEdgesInward/square/2024-02-26", "data/demonstrations/CornersEdgesInward/square", "cached configs/square.pkl", "CornersEdgesInward")

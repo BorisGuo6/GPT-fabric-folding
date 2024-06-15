@@ -1,0 +1,367 @@
+
+(gptfab-smoothing) rajeshgayathri2003@latte:~/GPT-fabric-folding$ python code_generation.py --cached square --task DoubleTriangle --img_size 128 --inputs llm --gpt_model gpt-4 --eval_type zero-shot
+Compute Device: NVIDIA GeForce RTX 4090
+
+Pyflex init done!
+40 config and state pairs loaded from cached configs/square.pkl
+###############Step 0##################
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+Completed:  True
+done
+False
+passc
+Center of the cloth:  (63, 63)
+eval result/DoubleTriangle/square/2024-06-14/0/0/depth/0.png
+Corners of the cloth:  [[100 100]
+ [ 27 100]
+ [100  27]
+ [ 27  27]]
+Farthest corners:  (array([100, 100]), array([27, 27]))
+Pick point:  [100 100]
+Place point:  [27 27]
+<class 'numpy.ndarray'>
+<class 'numpy.ndarray'>
+^CTraceback (most recent call last):
+  File "code_generation.py", line 208, in <module>
+    main()
+  File "code_generation.py", line 143, in main
+    exec(code)
+  File "<string>", line 3, in <module>
+  File "/home/rajeshgayathri2003/GPT-fabric-folding/softgym/envs/foldenv.py", line 113, in pick_and_place
+    self.movep(prepick_pos, speed=5e-3)
+  File "/home/rajeshgayathri2003/GPT-fabric-folding/softgym/envs/foldenv.py", line 100, in movep
+    self.action_tool.step(action, step_sim_fn=self.step_simulation)
+  File "/home/rajeshgayathri2003/GPT-fabric-folding/softgym/action_space/action_space.py", line 244, in step
+    step_sim_fn()
+  File "/home/rajeshgayathri2003/GPT-fabric-folding/softgym/envs/foldenv.py", line 61, in step_simulation
+    rgb, _ = self.render_image()
+  File "/home/rajeshgayathri2003/GPT-fabric-folding/softgym/envs/foldenv.py", line 72, in render_image
+    rgb, depth = pyflex.render()
+KeyboardInterrupt
+

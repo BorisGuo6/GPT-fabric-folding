@@ -123,7 +123,7 @@ def main():
         cloth_center = find_pixel_center_of_cloth(image_path)
         print(cloth_center)
         
-        cloth_corners = find_corners(image_path, False).squeeze()
+        cloth_corners = find_corners(image_path, False)
         # Printing the detected cloth corners
         print(cloth_corners)
 
@@ -149,7 +149,7 @@ def main():
             cloth_center = find_pixel_center_of_cloth(image_path)
             print(cloth_center)
         
-            cloth_corners = find_corners(image_path, False).squeeze()
+            cloth_corners = find_corners(image_path, False)
             # Printing the detected cloth corners
             print(cloth_corners)
             
@@ -207,8 +207,9 @@ def main():
             test_pick_pixels.append(test_pick_pixel_1)
             test_place_pixels.append(test_place_pixel_1)
 
-            print(type(depth))
-            print(type(camera_params))
+            print(test_pick_pixel_1)
+            print(type(test_pick_pixel_1))
+            
             test_pick_pos_1 = get_world_coord_from_pixel(test_pick_pixel_1, depth, camera_params)
             test_place_pos_1= get_world_coord_from_pixel(test_place_pixel_1, depth, camera_params)
 

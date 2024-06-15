@@ -103,40 +103,33 @@ def main():
         completed = False
         error = None
         instruction = instructions[step]
-        new_prompt = MAIN_PROMPT.replace("[INSERT TASK]", instruction)
-        messages = []
-        messages.append({
-                            "role": "system",
-                            "content": new_prompt
-                        })
-        response = client.chat.completions.create(
+        f = open("log.txt".format(step), 'r')
+        content = f.read()
         
-                                    model=args.gpt_model,
-                                    messages=messages,
-                                    temperature=0,
-                                    max_tokens=769,
-                                    top_p=1,
-                                    frequency_penalty=0,
-                                    presence_penalty=0
-                                )
+        code_block = content.split("```python")
+        sys.stdout = sys.__stdout__
+        block_number = 0
         
-        new_output = ""
-        file = "/home/rajeshgayathri2003/GPT-fabric-folding/log_{}.txt".format(step)
-        content = response.choices[0].message.content
-        sys.stdout = open(file, 'w')
-        print(content)
+        for block in code_block:
+            if len(block.split("```")) > 1:
+                code = block.split("```")[0]
+                block_number+=1   
+                
+                exec(code)
+        count+=1
         
-
-        messages.append({"role":"assistant", "content":new_output})    
-    
-        #image path
+        rgb, depth = env.render_image()
+        depth_save = depth.copy() * 255
+        depth_save = depth_save.astype(np.uint8)
+        imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
+        imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
+        rgbs.append(rgb)            
         
         
+        '''
         while not completed:
             flag = False
-            code_block = content.split("```python")
-            sys.stdout = sys.__stdout__
-            block_number = 0
+            
             for block in code_block:
                 
                 if len(block.split("```")) > 1:
@@ -165,22 +158,11 @@ def main():
             print("done")
                 
             if error:
-                messages.append({"role": "user" ,"content": new_prompt + "Make sure you identify the pick point and the place point and print the same."})
-                response = client.chat.completions.create(
-        
-                                    model=args.gpt_model,
-                                    messages=messages,
-                                    temperature=0,
-                                    max_tokens=769,
-                                    top_p=1,
-                                    frequency_penalty=0,
-                                    presence_penalty=0
-                                )
+                pass
             
-                file = "/home/rajeshgayathri2003/GPT-fabric-folding/log_{}.txt".format(step)
-                content = response.choices[0].message.content
+                file = "/home/rajeshgayathri2003/GPT-fabric-folding/log.txt"
+                
                 sys.stdout = open(file, 'w')
-                print(content)
                 
             
             else:
@@ -188,18 +170,14 @@ def main():
                 if not(error) and not(flag):
                     completed = True
                     count+=1
-                    rgb, depth = env.render_image()
-                    depth_save = depth.copy() * 255
-                    depth_save = depth_save.astype(np.uint8)
-                    imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
-                    imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
-                    rgbs.append(rgb)
                 #print(pick_point)
                 print("The value of count is", count)
                 print("The value is", completed)
+                
+        '''
 
                 
-    run = 25_3
+    run = 25_2
     if args.save_vid:
         save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached, str(date_today), str(run))
         if not os.path.exists(save_vid_path):
