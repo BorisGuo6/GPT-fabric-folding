@@ -386,7 +386,7 @@ def analyze_images_gpt(image_list, task, action_id, eval_type):
                 }
             ],
             "max_tokens": 1000,
-            "temperature": 0
+            "temperature": 0.2
         }
 
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)

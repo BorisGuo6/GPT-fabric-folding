@@ -41,11 +41,12 @@ def main():
     parser.add_argument('--inputs', type=str, default="user", help='Defines whether the pick and place points are determined by the user of llm')
     parser.add_argument('--gpt_model', type=str, default="gpt-4", help='The version of gpt to be used')
     parser.add_argument('--eval_type', type=str, help="Mention whether [zero-shot | in-context] learning")
+    parser.add_argument('--total_runs', type=int, help="Mention the total number of runs")
     args = parser.parse_args()
 
     cached_path = os.path.join("cached configs", args.cached + ".pkl")
-
     env = FoldEnv(cached_path, gui=args.gui, render_dim=args.img_size)
+    
     pick_and_place = env.pick_and_place
     
     #temporary
@@ -56,32 +57,6 @@ def main():
     #today's date
     date_today = date.today()
     
-    #saving path
-    rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
-    depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
-    if not os.path.exists(rgb_save_path):
-        os.makedirs(rgb_save_path)
-    if not os.path.exists(depth_save_path):
-        os.makedirs(depth_save_path)
-
-    #current_pos, _ = env.action_tool._get_pos()[0].squeeze()
-    
-    # env settings
-    env.reset(config_id=config_id)
-    camera_params = env.camera_params
-    
-    # record action's pixel info
-    test_pick_pixels = []
-    test_place_pixels = []
-    rgbs = []
-
-    # initial state
-    rgb, depth = env.render_image()
-    depth_save = depth.copy() * 255
-    depth_save = depth_save.astype(np.uint8)
-    imageio.imwrite(os.path.join(depth_save_path, "0.png"), depth_save)
-    imageio.imwrite(os.path.join(rgb_save_path, "0.png"), rgb)
-    rgbs.append(rgb)
     
     
     #instruction = "The double triangle fold involves two steps. In step one, the cloth is folded along its diagonal.This brings one of the top corners to one of the bottom corners on the opposite side resulting in a triangular shape. In step two, the triangular shaped cloth is folded along its longer side to get a smaller triangle."
@@ -90,41 +65,72 @@ def main():
 
     }
     steps = 2
-    count = 0
+    
     #print(code_block)
     
-    
+    obtained_scores = np.zeros((args.total_runs, env.num_configs))
     i = 0
+    for config_id in tqdm(range(env.num_configs)):
+        count = 0
+        #saving path
+        rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
+        depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
+        if not os.path.exists(rgb_save_path):
+            os.makedirs(rgb_save_path)
+        if not os.path.exists(depth_save_path):
+            os.makedirs(depth_save_path)
 
-    for step in range(steps):
-        image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", str(count) + ".png")
-        new_prompt = ""
-        print("###############Step {}##################".format(step))
-        completed = False
-        error = None
-        instruction = instructions[step]
-        f = open("log.txt".format(step), 'r')
-        content = f.read()
+        #current_pos, _ = env.action_tool._get_pos()[0].squeeze()
         
-        code_block = content.split("```python")
-        sys.stdout = sys.__stdout__
-        block_number = 0
+        # env settings
+        env.reset(config_id=config_id)
+        camera_params = env.camera_params
         
-        for block in code_block:
-            if len(block.split("```")) > 1:
-                code = block.split("```")[0]
-                block_number+=1   
-                
-                exec(code)
-        count+=1
-        
+        # record action's pixel info
+        test_pick_pixels = []
+        test_place_pixels = []
+        rgbs = []
+
+        # initial state
         rgb, depth = env.render_image()
         depth_save = depth.copy() * 255
         depth_save = depth_save.astype(np.uint8)
-        imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
-        imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
-        rgbs.append(rgb)            
+        imageio.imwrite(os.path.join(depth_save_path, "0.png"), depth_save)
+        imageio.imwrite(os.path.join(rgb_save_path, "0.png"), rgb)
+        rgbs.append(rgb)
+        for step in range(steps):
+            image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", str(count) + ".png")
+            new_prompt = ""
+            print("###############Step {}##################".format(step))
+            completed = False
+            error = None
+            instruction = instructions[step]
+            f = open("log.txt".format(step), 'r')
+            content = f.read()
+            
+            code_block = content.split("```python")
+            sys.stdout = sys.__stdout__
+            block_number = 0
+            
+            for block in code_block:
+                if len(block.split("```")) > 1:
+                    code = block.split("```")[0]
+                    block_number+=1   
+                    
+                    exec(code)
+            count+=1
+            
+            rgb, depth = env.render_image()
+            depth_save = depth.copy() * 255
+            depth_save = depth_save.astype(np.uint8)
+            imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
+            imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
+            rgbs.append(rgb)            
         
+        particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+        with open(os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "info.pkl"), "wb+") as f:
+            data = {"pick": test_pick_pixels, "place": test_place_pixels, "pos": particle_pos}
+            pickle.dump(data, f)
         
         '''
         while not completed:
@@ -177,12 +183,34 @@ def main():
         '''
 
                 
-    run = 25_2
-    if args.save_vid:
-        save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached, str(date_today), str(run))
-        if not os.path.exists(save_vid_path):
-            os.makedirs(save_vid_path)
-        save_video(env.rgb_array, os.path.join(save_vid_path, str(config_id)))
+        if args.save_vid:
+            save_vid_path = os.path.join(args.save_video_dir, args.task, args.cached, str(date_today), str(run))
+            if not os.path.exists(save_vid_path):
+                os.makedirs(save_vid_path)
+            save_video(env.rgb_array, os.path.join(save_vid_path, str(config_id)))
+            
+        eval_dir = os.path.join("eval result", args.task, args.cached, str(date_today), str(run))
+        expert_dir = os.path.join("data", "demonstrations", args.task, args.cached)
+        score = get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, args.task, config_id)
+        obtained_scores[run,config_id] = score[0]
+        
+        # Saving the matrix corresponding to the obtained scores
+    matrix_save_folder = os.path.join("position errors", args.task, args.cached)
+    os.makedirs(matrix_save_folder, exist_ok=True)
+    matrix_save_path = os.path.join(matrix_save_folder, str(date_today) + ".npy")
+    np.save(matrix_save_path, obtained_scores)
+
+    # Getting the analysis corresponding to the min and average obtained scores
+    min_scores = np.zeros(env.num_configs)
+    average_scores = np.zeros(env.num_configs)
+    for config_id in range(env.num_configs):
+        min_scores[config_id] = np.min(obtained_scores[:,config_id])
+        average_scores[config_id] = np.mean(obtained_scores[:,config_id])
+    
+    # Printing the final values out
+    print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+    print("The mean and standard deviation for the best scores:", np.mean(min_scores), np.std(min_scores))
+    print("The mean and standard deviation for the average scores:", np.mean(average_scores), np.std(average_scores))    
             
     print("Done")
 

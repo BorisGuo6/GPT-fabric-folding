@@ -1,7 +1,7 @@
 from slurm_utils import find_corners, find_pixel_center_of_cloth, append_pixels_to_list
 from datetime import date, timedelta
 import os
-
+import numpy as np
 date_today = date.today()
 
 image_path = os.path.join("eval result", "DoubleTriangle", "square", str(date_today), str(0), str(0), "depth", str(0) + ".png")
@@ -76,13 +76,25 @@ farthest_corners = find_farthest_corners(corners)
 print(farthest_corners)
 """
 
-code_block = code3.split("```python")
-block_number = 0
-for block in code_block:
-    if len(block.split("```")) > 1:
-        code = block.split("```")[0]
-        block_number+=1
-        exec(code)
+cloth_corners = np.array([[100,100], [27,27], [100,27], [27,100]])
+img_size =128
+cloth_center = (63,63)
 
-print("x")
-print(pick_point)
+code = open('log_0.txt', 'r')
+code = code.read()
+code_block = code.split("```python")
+
+# for block in code_block:
+#     if len(block.split("```")) > 1:
+#         code = block.split("```")[0]
+    
+#         if code:
+#             exec(code)
+#             print("done")
+
+def test():
+    lcls = locals()
+    exec( 'a = 3', lcls)
+    
+    print(f'a is {a}')
+test()

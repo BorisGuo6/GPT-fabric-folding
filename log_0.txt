@@ -1,66 +1,86 @@
-Let's start by finding the center of the cloth and the corners.
-
-```python
-# Find the center of the cloth
-center = find_pixel_center_of_cloth(image_path, False)
-print("Center of the cloth: ", center)
-
-# Find the corners of the cloth
-corners = find_corners(image_path, False)
-print("Corners of the cloth: ", corners)
-```
-
-Next, we will define a function to identify the distance between each pair of corners and sort them in descending order of distance. This function takes the output of the find_corners function as its input and returns the corners that are farthest apart.
+Let's start by defining the function `identifyCornerRegions()` as per step 1:
 
 ```python
 import numpy as np
 
-def find_farthest_corners(corners):
-    # Calculate the distance between each pair of corners
-    distances = []
-    for i in range(len(corners)):
-        for j in range(i+1, len(corners)):
-            distance = np.sqrt((corners[i][0] - corners[j][0])**2 + (corners[i][1] - corners[j][1])**2)
-            distances.append((distance, (corners[i], corners[j])))
+def identifyCornerRegions(corners: np.ndarray) -> list:
+    # Assuming corners are provided as a numpy array of shape (4, 2)
+    # where each row is a corner with [x, y] coordinates
+    top_left = min(corners, key=lambda corner: corner[0] + corner[1])
+    top_right = min(corners, key=lambda corner: -corner[0] + corner[1])
+    bottom_left = min(corners, key=lambda corner: corner[0] - corner[1])
+    bottom_right = min(corners, key=lambda corner: -corner[0] - corner[1])
     
-    # Sort the distances in descending order
-    distances.sort(reverse=True)
+    return [
+        (top_left, 'top left'),
+        (top_right, 'top right'),
+        (bottom_left, 'bottom left'),
+        (bottom_right, 'bottom right')
+    ]
+```
+
+Next, we'll define the function `identifyPickandPlace()` as per step 2:
+
+```python
+def identifyPickandPlace(corners: np.ndarray) -> tuple:
+    corner_regions = identifyCornerRegions(corners)
+    pick_point = None
+    place_point = None
     
-    # Return the corners that are farthest apart
-    return distances[0][1]
-
-farthest_corners = find_farthest_corners(corners)
-print("Farthest corners: ", farthest_corners)
+    for corner, region in corner_regions:
+        if region == 'bottom right':
+            pick_point = corner
+        elif region == 'top left':
+            place_point = corner
+            
+    return pick_point, place_point
 ```
 
-Now, we will identify one of these corners as the picking point and one as the placing point. Since the user command is to fold the cloth along its diagonal, we will choose one of the farthest corners as the pick point and the other as the place point.
+Now, let's define the function `findDistanceAndDirection()` as per step 3:
 
 ```python
-# Identify the pick point and the place point
-pick_point = farthest_corners[0]
-place_point = farthest_corners[1]
-print("Pick point: ", pick_point)
-print("Place point: ", place_point)
+def findDistanceAndDirection(pick_point: np.ndarray, place_point: np.ndarray) -> tuple:
+    delta_x = place_point[0] - pick_point[0]
+    delta_y = place_point[1] - pick_point[1]
+    distance = np.sqrt(delta_x**2 + delta_y**2)
+    angle = np.arctan2(delta_y, delta_x)
+    return distance, angle
 ```
 
-Next, we will append the chosen pick and place point to the test_pick_pixel and test_place_pixel list using the append_pixels_to_list() function.
+For step 4, we'll append the chosen pick and place points to the test_pick_pixels and test_place_pixels list:
 
 ```python
-# Append the pick and place points to the respective lists
-append_pixels_to_list(args.img_size, pick_point, place_point, test_pick_pixels, test_place_pixels)
+# Assuming pick_point and place_point have been identified using identifyPickandPlace()
+append_pixels_to_list(img_size, pick_point, place_point, test_pick_pixels, test_place_pixels)
 ```
 
-Now, we will convert the 2-dimensional pick and place points into 3-dimensions using the get_world_coord_from_pixel function.
+Next, we'll convert the 2-dimensional pick and place points into 3-dimensions using the `get_world_coord_from_pixel` function as per step 5:
 
 ```python
-# Convert the pick and place points to 3D
-pick_point_3d = get_world_coord_from_pixel(pick_point, depth, camera_params)
-place_point_3d = get_world_coord_from_pixel(place_point, depth, camera_params)
+pick_point_3d = get_world_coord_from_pixel(np.array(pick_point), depth, camera_params)
+place_point_3d = get_world_coord_from_pixel(np.array(place_point), depth, camera_params)
 ```
 
-Finally, we will use the pick_and_place function to move the robot arm from the pick point to the place point.
+Finally, we'll use the output of `get_world_coord_from_pixel` function as input to the `pick_and_place` function as per step 6:
 
 ```python
-# Move the robot arm from the pick point to the place point
 pick_and_place(pick_point_3d, place_point_3d)
 ```
+
+Now, let's execute each of these steps one by one:
+
+```python
+# Step 1: Identify corner regions
+corners = cloth_corners  # Assuming cloth_corners is a numpy array of shape (4, 2)
+corner_regions = identifyCornerRegions(corners)
+
+# Step 2: Identify pick and place points
+pick_point, place_point = identifyPickandPlace(corners)
+
+# Step 3: Find distance and direction
+distance, angle = findDistanceAndDirection(pick_point, place_point)
+
+# Step 4: Append to test pick and place pixels list
+append_pixels_to_list(img_size, pick_point, place_point, test_pick_pixels, test_place_pixels)
+
+# Step 5: Convert to 
