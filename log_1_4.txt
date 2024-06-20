@@ -1,0 +1,75 @@
+Printing for config 4 step 1
+```python
+import numpy as np
+
+# Step 1: Define the function identifyCornerRegions()
+def identifyCornerRegions(corners):
+    # corners is a numpy array of shape (4,2)
+    # Each row represents a corner of the cloth
+    # Each row is of the form [x-coordinate, y-coordinate]
+    
+    # Find the center of the cloth
+    center = np.mean(corners, axis=0)
+    
+    # Initialize lists to store the corners
+    top_corners = []
+    bottom_corners = []
+    left_corners = []
+    right_corners = []
+    
+    # Iterate over the corners
+    for i in range(4):
+        # If the y-coordinate of the corner is less than the y-coordinate of the center, it is a top corner
+        if corners[i,1] < center[1]:
+            top_corners.append((corners[i,0], corners[i,1]))
+        # If the y-coordinate of the corner is more than the y-coordinate of the center, it is a bottom corner
+        else:
+            bottom_corners.append((corners[i,0], corners[i,1]))
+        
+        # If the x-coordinate of the corner is less than the x-coordinate of the center, it is a left corner
+        if corners[i,0] < center[0]:
+            left_corners.append((corners[i,0], corners[i,1]))
+        # If the x-coordinate of the corner is more than the x-coordinate of the center, it is a right corner
+        else:
+            right_corners.append((corners[i,0], corners[i,1]))
+    
+    # Return the corners and their regions
+    return top_corners, bottom_corners, left_corners, right_corners
+```
+
+```python
+# Step 2: Define the function identifyPickandPlace()
+def identifyPickandPlace(top_corners, bottom_corners):
+    # The pick points are the top corners
+    pick_pos_1 = top_corners[0]
+    pick_pos_2 = top_corners[1]
+    
+    # The place points are the bottom corners
+    place_pos_1 = bottom_corners[0]
+    place_pos_2 = bottom_corners[1]
+    
+    return pick_pos_1, pick_pos_2, place_pos_1, place_pos_2
+```
+
+```python
+# Step 3: Call the above function
+# This step cannot be performed as the variables cloth_corners and cloth_center are not defined
+```
+
+```python
+# Step 4: Print the values of pick_pos_1, pick_pos_2, place_pos_1 or place_pos_2
+# This step cannot be performed as the variables pick_pos_1, pick_pos_2, place_pos_1 and place_pos_2 are not defined
+```
+
+```python
+# Step 5: Define the function findDistanceAndDirection()
+def findDistanceAndDirection(pick_pos, place_pos):
+    # Calculate the distance between the pick point and the place point
+    distance = np.sqrt((pick_pos[0] - place_pos[0])**2 + (pick_pos[1] - place_pos[1])**2)
+    
+    # Calculate the angle between the pick point and the place point
+    angle = np.arctan2(place_pos[1] - pick_pos[1], place_pos[0] - pick_pos[0])
+    
+    return distance, angle
+```
+

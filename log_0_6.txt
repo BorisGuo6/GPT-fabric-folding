@@ -1,0 +1,53 @@
+Printing for config 6 step 0
+Here is the Python code that implements the above steps:
+
+```python
+import numpy as np
+
+# Step 1: Define the function identifyCornerRegions()
+def identifyCornerRegions(corners):
+    # Identify the corners
+    top_left = min(corners, key=lambda x: x[0] + x[1])
+    top_right = max(corners, key=lambda x: x[0] - x[1])
+    bottom_left = max(corners, key=lambda x: x[0] + x[1])
+    bottom_right = min(corners, key=lambda x: x[0] - x[1])
+    
+    # Return the corners and their regions
+    return [('top_left', top_left), ('top_right', top_right), ('bottom_left', bottom_left), ('bottom_right', bottom_right)]
+
+# Step 2: Define the function identifyPickandPlace()
+def identifyPickandPlace(corners, center):
+    # Identify the corners
+    corner_regions = identifyCornerRegions(corners)
+    
+    # Identify the pick points and place points
+    pick_pos_1 = corner_regions[0][1]  # top left corner
+    pick_pos_2 = corner_regions[2][1]  # bottom left corner
+    place_pos_1 = corner_regions[1][1]  # top right corner
+    place_pos_2 = corner_regions[3][1]  # bottom right corner
+    
+    # Return the pick points and place points
+    return pick_pos_1, pick_pos_2, place_pos_1, place_pos_2
+
+# Step 3: Call the function identifyPickandPlace()
+pick_pos_1, pick_pos_2, place_pos_1, place_pos_2 = identifyPickandPlace(cloth_corners, cloth_center)
+
+# Step 4: Print the values of pick_pos_1, pick_pos_2, place_pos_1, place_pos_2
+print('Pick Position 1:', pick_pos_1)
+print('Pick Position 2:', pick_pos_2)
+print('Place Position 1:', place_pos_1)
+print('Place Position 2:', place_pos_2)
+
+# Step 5: Define the function findDistanceAndDirection()
+def findDistanceAndDirection(pick_pos, place_pos):
+    # Calculate the distance between the pick point and the place point
+    distance = np.sqrt((place_pos[0] - pick_pos[0])**2 + (place_pos[1] - pick_pos[1])**2)
+    
+    # Calculate the angle between the pick point and the place point
+    angle = np.arctan2(place_pos[1] - pick_pos[1], place_pos[0] - pick_pos[0])
+    
+    # Return the distance and angle
+    return distance, angle
+```
+
+This code will identify the corners of the cloth, determine the pick and place points, and calculate the distance and angle between each pair of pick and place points.

@@ -35,15 +35,13 @@ The following variables have already been defined.
 CODE GENERATION:
 NOTE: Each fold consists of a series of sub-folds. Ensure that you generate code to achieve all the sub folds.
 When generating the code to identify the pick and place points and fold the cloth as per requirements, do the following: 
-1. Define a function called identifyCornerRegions() that identifies which corners lie at the top and which lie at the bottom, which ones are at towards the left and which ones towards the right. The function takes a numpy array as input and returns a list of tuples. Each tuple contains the corners and the region it belongs to.
-2. The user command is "[INSERT TASK]". Based on this information and the output of identifyCornerRegions(), define a function called identifyPickandPlace() which outputs the pick point and the place point.  
-3. Based on the pick point and the place point, define a function findDistanceAndDirection() that returns a tuple containing the distance between the two points and angle between the two in radians. 
-4. Append the chosen pick and place point to the test_pick_pixel and test_place_pixel list using the append_pixels_to_list() function. Pass the first argument as args.img_size.
-5. Convert the 2-dimensional pick and place points into 3-dimensions using the get_world_coord_from_pixel function
-6. The output of get_world_coord_from_pixel function is given as input to the pick_and_place function. The third parameter of pick_and_place need not be specified.
-7. For each of the above steps mark the code separately by ```python and ``` tags.
+1. Define a function called identifyCornerRegions() that identifies which corners lie at the top and which lie at the bottom, which ones are at towards the left and which ones towards the right. The function takes cloth_corners (a numpy array) as input and returns a list of tuples. Each tuple contains the corners and the region it belongs to.
+2. The user command is "[INSERT TASK]". Based on this information and the output of identifyCornerRegions(), define a function called identifyPickandPlace() which outputs the pick point and the place point. The function takes cloth_corners (numpy array) and cloth_center (a tuple) as inputs. THE OUTPUT CANNOT BE None Type.
+3. Call the above function withe cloth_corners and cloth_center as inputs. Store the output as pick_point and place_point. Print the same.
+4. Based on the pick point and the place point, define a function findDistanceAndDirection() that returns a tuple containing the distance between the two points and angle between the two in radians. 
+5. For each of the above steps mark the code separately by ```python and ``` tags.
 
-Ensure all eight steps are executed for each action
+Ensure all steps are executed for each action
 
 Finally, perform each of these steps one by one.
 
@@ -55,6 +53,41 @@ ERROR_CORRECTION_PROMPT = \
 Can you output a modified code block to resolve this error? Ensure that you include all the functions that you generated previously along with the corrected version of the current code block.
 """
 
+
+MAIN_PROMPT_BIMANUAL = \
+""" **Cloth Folding Robot**
+You are the brain of a cloth folding robot that generates Python code that can output the pick and place coordinates required to achieve a given fold.
+The robot would pick the cloth at the 'picking point' drag it over by a small amount and place it at the 'placing point'.
+You must remember that this conversation is a monologue, and that you are in control. I am not able to assist you with any questions, and you must output the final code yourself by making use of the available information, common sense, and general knowledge.
+
+ENVIRONMENT SET-UP:
+The pick point and the place point are given by two dimensional coordinates represented as [x-coordinate, y-coordinate].
+The 2D coordinate system of the environment is as follows:
+    1. The x-axis is in the horizontal direction, increasing to the right.
+    2. The y-axis is in the vertical direction, increasing downwards.
+    
+The robot arm needs to be moved to the first pick point. Ensure that the chosen pick point and place point lie inside the cloth. 
+
+VARIABLES:
+The following variables have already been defined. 
+1. cloth_corners -> This is a numpy array that contains the corners of the cloth. It is an input to the identifyCornerRegions() function
+2. cloth_center -> This is the center of the cloth.
+
+CODE GENERATION:
+NOTE: Each fold consists of a series of sub-folds. Ensure that you generate code to achieve all the sub folds.
+When generating the code to identify the pick and place points and fold the cloth as per requirements, do the following: 
+1. Define a function called identifyCornerRegions() that identifies which corners lie at the top and which lie at the bottom, which ones are at towards the left and which ones towards the right. The function takes a numpy array as input and returns a list of tuples. Each tuple contains the corners and the region it belongs to.
+2. The user command is "[INSERT TASK]". Based on this information and the output of identifyCornerRegions(), define a function called identifyPickandPlace() which outputs the pick point and the place point. Since this is a bimanual system, you must output two pick points and two place points.
+3. Call the above function using with cloth_corners and cloth_center. DO NOT DEFINE THESE VARIABLES. Store the two pick points and two place points as pick_pos_1, pick_pos_2, place_pos_1 or place_pos_2. 
+4. Print the values of pick_pos_1, pick_pos_2, place_pos_1 or place_pos_2. 
+5. Based on the pick point and the place point, define a function findDistanceAndDirection() that returns a tuple containing the distance between each of the two points and angle between the two in radians. 
+6. For each of the above steps mark the code separately by ```python and ``` tags.
+
+Ensure all the steps are executed for each action
+
+Finally, perform each of these steps one by one.
+
+"""
 ###deprecated
 
 '''

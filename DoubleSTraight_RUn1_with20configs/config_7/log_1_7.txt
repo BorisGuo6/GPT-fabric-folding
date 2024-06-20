@@ -1,0 +1,88 @@
+Let's start by defining the function `identifyCornerRegions()` as per step 1:
+
+```python
+import numpy as np
+
+def identifyCornerRegions(corners: np.ndarray) -> list:
+    # Assuming corners are provided in the order: top-left, top-right, bottom-right, bottom-left
+    top_left, top_right, bottom_right, bottom_left = corners
+    regions = []
+    
+    # Identify top and bottom regions
+    if top_left[1] < bottom_left[1]:
+        regions.append((top_left, 'top_left'))
+        regions.append((bottom_left, 'bottom_left'))
+    else:
+        regions.append((top_left, 'bottom_left'))
+        regions.append((bottom_left, 'top_left'))
+    
+    if top_right[1] < bottom_right[1]:
+        regions.append((top_right, 'top_right'))
+        regions.append((bottom_right, 'bottom_right'))
+    else:
+        regions.append((top_right, 'bottom_right'))
+        regions.append((bottom_right, 'top_right'))
+    
+    # Identify left and right regions
+    if top_left[0] < top_right[0]:
+        # No change needed, already correct
+        pass
+    else:
+        # Swap the regions
+        for i, (corner, region) in enumerate(regions):
+            if 'left' in region:
+                regions[i] = (corner, region.replace('left', 'right'))
+            elif 'right' in region:
+                regions[i] = (corner, region.replace('right', 'left'))
+    
+    return regions
+```
+
+Next, we'll define the function `identifyPickandPlace()` as per step 2:
+
+```python
+def identifyPickandPlace(corners: np.ndarray) -> tuple:
+    regions = identifyCornerRegions(corners)
+    pick_point = None
+    place_point = None
+    
+    for corner, region in regions:
+        if region == 'bottom_right':
+            pick_point = corner
+        elif region == 'top_right':
+            # Assuming the top right quadrant edge is halfway between the top right and top left corners
+            top_left_corner = next(c for c, r in regions if r == 'top_left')
+            place_point = (top_left_corner + corner) / 2
+    
+    return pick_point, place_point
+```
+
+Now, let's define the function `findDistanceAndDirection()` as per step 3:
+
+```python
+def findDistanceAndDirection(pick_point: np.ndarray, place_point: np.ndarray) -> tuple:
+    distance = np.linalg.norm(place_point - pick_point)
+    angle = np.arctan2(place_point[1] - pick_point[1], place_point[0] - pick_point[0])
+    return distance, angle
+```
+
+Next, we'll append the chosen pick and place points to the test_pick_pixel and test_place_pixel lists as per step 4:
+
+```python
+# Assuming pick_point and place_point have been identified using identifyPickandPlace()
+append_pixels_to_list(img_size, test_pick_pixel, test_place_pixel, test_pick_pixels, test_place_pixels)
+```
+
+Now, we'll convert the 2-dimensional pick and place points into 3-dimensions using the `get_world_coord_from_pixel` function as per step 5:
+
+```python
+# Assuming pick_point and place_point are numpy arrays
+pick_point_world = get_world_coord_from_pixel(pick_point, depth, camera_params)
+place_point_world = get_world_coord_from_pixel(place_point, depth, camera_params)
+```
+
+Finally, we'll call the `pick_and_place` function with the output of `get_world_coord_from_pixel` function as per step 6:
+
+```python
+pick_and_place(pick_point_world, place_point_world)
+``

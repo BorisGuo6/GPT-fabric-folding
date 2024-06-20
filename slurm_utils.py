@@ -95,6 +95,8 @@ def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, task, co
         num_info = 8
     elif task == "AllCornersInward":
         num_info = 9
+    elif task == "DoubleStraightBimanual":
+        num_info = 8
     else:
         num_info = 16
 
@@ -157,6 +159,7 @@ def append_pixels_to_list(img_size, test_pick_pixel, test_place_pixel, test_pick
     test_place_pixel = np.array([min(img_size - 1, test_place_pixel[0]), min(img_size - 1, test_place_pixel[1])])
     test_pick_pixels.append(test_pick_pixel)
     test_place_pixels.append(test_place_pixel)
+    return test_pick_pixel, test_place_pixel
     
     
 

@@ -1,3 +1,5 @@
+#This file executes code generation abilities for GPT-Fabric++ without using GPT-4V
+
 import argparse
 import sys
 import json
@@ -19,6 +21,7 @@ from prompts import MAIN_PROMPT, ERROR_CORRECTION_PROMPT
 from io import StringIO
 from contextlib import redirect_stdout
 import traceback
+
 
 #deprectaed
 from softgym.registered_env import env_arg_dict, SOFTGYM_ENVS

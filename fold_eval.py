@@ -204,9 +204,9 @@ def main():
             test_pick_pixel_2 = np.array([min(args.img_size - 1, test_pick_pixel_2[0]), min(args.img_size - 1, test_pick_pixel_2[1])])
             test_place_pixel_2 = np.array([min(args.img_size - 1, test_place_pixel_2[0]), min(args.img_size - 1, test_place_pixel_2[1])])
 
-            test_pick_pixels.append(test_pick_pixel_1)
-            test_place_pixels.append(test_place_pixel_1)
-
+            test_pick_pixels.append(np.vstack((test_pick_pixel_1, test_pick_pixel_2)))
+            test_place_pixels.append(np.vstack((test_place_pixel_1, test_place_pixel_2)))
+            
             print(test_pick_pixel_1)
             print(type(test_pick_pixel_1))
             
@@ -222,6 +222,7 @@ def main():
             test_pick_pos = np.vstack((test_pick_pos_1, test_pick_pos_2))
             test_place_pos = np.vstack((test_place_pos_1, test_place_pos_2))
             
+
             #print(np.shape(test_pick_pos))
             # pick & place
             env.pick_and_place(test_pick_pos.copy(), test_place_pos.copy())

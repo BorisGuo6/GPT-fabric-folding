@@ -42,8 +42,31 @@ class DoubleStraight:
 
     def get_action(self, curr_corners, edge_middles, pickplace_idx):
         all_keypoints = np.concatenate((curr_corners, edge_middles), axis=0)
+        print(all_keypoints)
         pick_pos, place_pos = all_keypoints[pickplace_idx[0]], all_keypoints[pickplace_idx[1]]
         return pick_pos, place_pos
+
+class DoubleStraightBimanual():
+    def __init__(self):
+        print("welcome")
+        act_1 = [[[(0,1), (2,3)], [(5,2), (6,3)]]]
+        act_2 = [[[(0,1), (2,3)], [(6,3), (5,2)]]]
+        act_3 = [[[(2,3), (0,1)], [(5,2), (6,3)]]]
+        act_4 = [[[(2,3), (0,1)], [(6,3), (5,2)]]]
+
+        act_5 = [[[(0,2), (1,3)], [(4, 1), (7,3)]]]
+        act_6 = [[[(0,2), (1,3)], [(7, 3), (4,1)]]]
+        act_7 = [[[(1,3), (0,2)], [(4, 1), (7,3)]]]
+        act_8 = [[[(1,3), (0,2)], [(7, 3), (4,1)]]]
+        self.values = 10
+        self.actions = act_1 + act_2 + act_3 + act_4 + act_5 + act_6 + act_7 +act_8
+
+    def get_action(self, curr_corners, edge_middles, actions):
+        all_keypoints = np.concatenate((curr_corners, edge_middles), axis=0)
+        pick_pos_1, place_pos_1 = all_keypoints[actions[0][0]], all_keypoints[actions[1][0]]
+        pick_pos_2, place_pos_2 = all_keypoints[actions[0][1]], all_keypoints[actions[1][1]]
+
+        return pick_pos_1, place_pos_1, pick_pos_2, place_pos_2
 
 
 class CornersEdgesInward:
@@ -69,4 +92,5 @@ Demonstrator = {
     "DoubleStraight": DoubleStraight,
     "AllCornersInward": AllCornersInward,
     "CornersEdgesInward": CornersEdgesInward,
+    "DoubleStraightBimanual": DoubleStraightBimanual
 }

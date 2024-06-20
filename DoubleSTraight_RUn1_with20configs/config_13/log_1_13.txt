@@ -1,0 +1,82 @@
+Let's start by defining the function `identifyCornerRegions()` as per step 1:
+
+```python
+import numpy as np
+
+def identifyCornerRegions(corners):
+    # Assuming corners is a numpy array with shape (4, 2) where each row is [x, y]
+    top_corners = corners[corners[:, 1] == np.min(corners[:, 1])]
+    bottom_corners = corners[corners[:, 1] == np.max(corners[:, 1])]
+    left_corners = corners[corners[:, 0] == np.min(corners[:, 0])]
+    right_corners = corners[corners[:, 0] == np.max(corners[:, 0])]
+    
+    # Identify each corner region
+    top_left = tuple(np.intersect1d(top_corners, left_corners, axis=0)[0])
+    top_right = tuple(np.intersect1d(top_corners, right_corners, axis=0)[0])
+    bottom_left = tuple(np.intersect1d(bottom_corners, left_corners, axis=0)[0])
+    bottom_right = tuple(np.intersect1d(bottom_corners, right_corners, axis=0)[0])
+    
+    # Return list of tuples with corner and its region
+    return [(top_left, 'top left'), (top_right, 'top right'), 
+            (bottom_left, 'bottom left'), (bottom_right, 'bottom right')]
+```
+
+Next, we'll define the function `identifyPickandPlace()` as per step 2:
+
+```python
+def identifyPickandPlace(corners_info, pick_label, place_label):
+    pick_point = None
+    place_point = None
+    for corner, label in corners_info:
+        if label == pick_label:
+            pick_point = corner
+        elif label == place_label:
+            place_point = corner
+    return pick_point, place_point
+```
+
+Now, let's define the function `findDistanceAndDirection()` as per step 3:
+
+```python
+def findDistanceAndDirection(pick_point, place_point):
+    # Calculate the distance and angle
+    delta_x = place_point[0] - pick_point[0]
+    delta_y = place_point[1] - pick_point[1]
+    distance = np.sqrt(delta_x**2 + delta_y**2)
+    angle = np.arctan2(delta_y, delta_x)
+    return distance, angle
+```
+
+For step 4, we will append the chosen pick and place points to the test_pick_pixel and test_place_pixel list:
+
+```python
+# Assuming pick_point and place_point are already defined
+append_pixels_to_list(img_size, pick_point, place_point, test_pick_pixels, test_place_pixels)
+```
+
+For step 5, we will convert the 2D pick and place points into 3D:
+
+```python
+# Convert pick point
+pick_point_3d = get_world_coord_from_pixel(np.array(pick_point), depth, camera_params)
+
+# Convert place point
+place_point_3d = get_world_coord_from_pixel(np.array(place_point), depth, camera_params)
+```
+
+Finally, for step 6, we will call the `pick_and_place()` function with the 3D coordinates:
+
+```python
+pick_and_place(pick_point_3d, place_point_3d)
+```
+
+Now, let's execute each of these steps one by one:
+
+1. Identify the corner regions of the cloth.
+2. Identify the pick and place points based on the user command.
+3. Find the distance and direction between the pick and place points.
+4. Append the pick and place points to the test pixels lists.
+5. Convert the 2D pick and place points into 3D coordinates.
+6. Execute the pick and place action.
+
+Please note that the

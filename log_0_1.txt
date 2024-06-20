@@ -1,0 +1,72 @@
+Printing for config 1 step 0
+```python
+import numpy as np
+
+def identifyCornerRegions(corners):
+    # corners is a numpy array of shape (4,2)
+    # each row represents a corner [x-coordinate, y-coordinate]
+    # corners are assumed to be in clockwise or counter-clockwise order
+    # returns a list of tuples. Each tuple contains the corners and the region it belongs to.
+    
+    # Identify the corners
+    top_left = corners[np.argmin(corners.sum(axis=1))]
+    bottom_right = corners[np.argmax(corners.sum(axis=1))]
+    bottom_left = corners[np.argmin(np.diff(corners, axis=1))]
+    top_right = corners[np.argmax(np.diff(corners, axis=1))]
+
+    return [('top_left', top_left), ('top_right', top_right), ('bottom_left', bottom_left), ('bottom_right', bottom_right)]
+```
+
+```python
+def identifyPickandPlace(corners, center):
+    # corners is a numpy array of shape (4,2)
+    # each row represents a corner [x-coordinate, y-coordinate]
+    # center is a numpy array of shape (2,) representing the center of the cloth
+    # returns two pick points and two place points
+    
+    # Identify the corners
+    corner_regions = identifyCornerRegions(corners)
+    
+    # Identify the vertical edges
+    left_edge = min(corner_regions, key=lambda x: x[1][0])[1]
+    right_edge = max(corner_regions, key=lambda x: x[1][0])[1]
+    
+    # Pick points are at the top and bottom of the left edge
+    pick_pos_1 = [left_edge[0], center[1] - (right_edge[1] - center[1])]
+    pick_pos_2 = [left_edge[0], center[1] + (right_edge[1] - center[1])]
+    
+    # Place points are at the top and bottom of the right edge
+    place_pos_1 = [right_edge[0], center[1] - (right_edge[1] - center[1])]
+    place_pos_2 = [right_edge[0], center[1] + (right_edge[1] - center[1])]
+    
+    return pick_pos_1, pick_pos_2, place_pos_1, place_pos_2
+```
+
+```python
+# Call the function with cloth_corners and cloth_center
+pick_pos_1, pick_pos_2, place_pos_1, place_pos_2 = identifyPickandPlace(cloth_corners, cloth_center)
+
+# Print the values
+print("Pick Position 1: ", pick_pos_1)
+print("Pick Position 2: ", pick_pos_2)
+print("Place Position 1: ", place_pos_1)
+print("Place Position 2: ", place_pos_2)
+```
+
+```python
+def findDistanceAndDirection(pick_pos, place_pos):
+    # pick_pos and place_pos are lists of shape (2,) representing the pick and place positions
+    # returns a tuple containing the distance between the two points and angle between the two in radians
+    
+    # Calculate the distance
+    distance = np.sqrt((place_pos[0] - pick_pos[0])**2 + (place_pos[1] - pick_pos[1])**2)
+    
+    # Calculate the angle
+    angle = np.arctan2(place_pos[1] - pick_pos[1], place_pos[0] - pick_pos[0])
+    
+    return distance, angle
+```
+
+```python
+# Call the function with pick_pos_1 and place_pos_1
+distance_1, angle_1 = findDistanceAndDirection(pick_pos_1, place_pos

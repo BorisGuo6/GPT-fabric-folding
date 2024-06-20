@@ -11,7 +11,9 @@ import imageio
 import pickle
 from utils.visual import action_viz
 from softgym.envs.foldenv import FoldEnv
+from softgym.envs.foldenv_bimanual import FoldEnv as FoldEnv_Bimanual
 from Demonstrator.demonstrator import Demonstrator
+from Demonstrator.demonstrator import DoubleStraightBimanual
 
 
 def main():
@@ -24,7 +26,10 @@ def main():
 
     # env settings
     cached_path = os.path.join("cached configs", args.cached + ".pkl")
-    env = FoldEnv(cached_path, gui=args.gui, render_dim=args.img_size)
+    if args.task == "DoubleStraightBimanual":
+        env = FoldEnv_Bimanual(cached_path, gui=args.gui, render_dim=args.img_size)
+    else:
+        env = FoldEnv(cached_path, gui=args.gui, render_dim=args.img_size)
 
     # demonstrator settings
     demonstrator = Demonstrator[args.task]()
@@ -149,7 +154,9 @@ def main():
             for (ind, pickplace_idxs) in enumerate(pickplace_idx_comb):
                 for (i, pickplace_idx) in enumerate(pickplace_idxs):
                     curr_corners = env.get_corners()
+                    print("corners", curr_corners)
                     edge_middles = env.get_edge_middles()
+                    print("middle", edge_middles)
                     pick_pos, place_pos = demonstrator.get_action(curr_corners, edge_middles, pickplace_idx)
                     pick_pixel = get_pixel_coord_from_world(pick_pos, rgb_shape, camera_params)
                     place_pixel = get_pixel_coord_from_world(place_pos, rgb_shape, camera_params)
@@ -171,6 +178,45 @@ def main():
                     data = {"pick": pick_pixels, "place": place_pixels, "pos": particle_pos}
                     pickle.dump(data, f)
                 env.reset(config_id=config_id)
+
+
+        elif args.task == "DoubleStraightBimanual":
+            pickplace_idx_comb = demonstrator.actions
+            for (ind, pickplace_idxs) in enumerate(pickplace_idx_comb):
+                for (i, pickplace_idx) in enumerate(pickplace_idxs):
+                    curr_corners = env.get_corners()
+                    edge_middles = env.get_edge_middles()
+
+                    pick_pos_1, place_pos_1, pick_pos_2, place_pos_2 = demonstrator.get_action(curr_corners, edge_middles, pickplace_idx)
+                    pick_pixel_1 = get_pixel_coord_from_world(pick_pos_1, rgb_shape, camera_params)
+                    place_pixel_1 = get_pixel_coord_from_world(place_pos_1, rgb_shape, camera_params)
+                    pick_pixel_2 = get_pixel_coord_from_world(pick_pos_2, rgb_shape, camera_params)
+                    place_pixel_2 = get_pixel_coord_from_world(place_pos_2, rgb_shape, camera_params)
+                    
+                    pick_final = np.vstack((pick_pos_1, pick_pos_2))
+                    place_final = np.vstack((place_pos_1, place_pos_2))
+                    env.pick_and_place(pick_final.copy(), place_final.copy())
+
+                    rgb, depth = env.render_image()
+
+                    pick_pixels.append(np.vstack((pick_pixel_1, pick_pixel_2)))
+                    place_pixels.append(np.vstack((place_pixel_1, place_pixel_2)))
+
+                    #save 
+                    imageio.imwrite(os.path.join(save_folder_rgb, str(i + 1) + '-' + str(ind) + ".png"), rgb)
+                    depth = depth * 255
+                    depth = depth.astype(np.uint8)
+                    imageio.imwrite(os.path.join(save_folder_depth, str(i + 1) + '-' + str(ind) + ".png"), depth)
+                    rgbs.append(rgb)
+
+                particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+                with open(os.path.join(save_folder, "info-" + str(ind) + ".pkl"), "wb+") as f:
+                    data = {"pick": pick_pixels, "place": place_pixels, "pos": particle_pos}
+                    pickle.dump(data, f)
+                env.reset(config_id=config_id)
+
+
+                    
 
         ## Commenting the action visualization saving for now
         # # action viz

@@ -1,3 +1,4 @@
+#This file executes code generation abilities for GPT-Fabric++ using GPT-4V
 import argparse
 import sys
 import json
@@ -18,7 +19,6 @@ from cv2 import imwrite
 from prompts_generic import MAIN_PROMPT, ERROR_CORRECTION_PROMPT
 from gpt import generate_code_from_gpt
 import traceback
-from io import StringIO
 from contextlib import redirect_stdout
 
 from openai import OpenAI
@@ -83,8 +83,8 @@ if __name__ == "__main__":
         #sys.stdout = open(output_file, 'w', buffering=1)
 
         for config_id in tqdm(range(env.num_configs)):
-            #if config_id != 29:
-            #   continue
+            if config_id >= 10:
+              break
             rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
             depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
             if not os.path.exists(rgb_save_path):
@@ -158,7 +158,7 @@ if __name__ == "__main__":
                     new_prompt = MAIN_PROMPT.replace("[INSERT TASK]", instruction)
                     messages = []
                     
-                    content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, 0, "system", messages)
+                    content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, config_id, 0, "system", messages)
                     
                     completed = False
                     new_prompt = ""
@@ -199,9 +199,14 @@ if __name__ == "__main__":
                                 print("passc")
 
                         print("done")
+                        test_pick_pixel, test_place_pixel = append_pixels_to_list(img_size, pick_point, place_point, test_pick_pixels, test_place_pixels)
+                        pick_point_3d = get_world_coord_from_pixel(test_pick_pixel, depth, camera_params)
+                        place_point_3d = get_world_coord_from_pixel(test_place_pixel, depth, camera_params)
+
+                        pick_and_place(pick_point_3d.copy(), place_point_3d.copy())
                         
                         if error:
-                            content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, 0, "user", messages)
+                            content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, config_id, 0, "user", messages)
                             
                         else:
                             error = False

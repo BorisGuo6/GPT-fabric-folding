@@ -82,7 +82,7 @@ class FoldEnv:
         if speed is None:
             speed = 0.1
         target_pos = np.array(pos)
-        print("Target pos shape", np.shape(target_pos))
+        #print("Target pos shape", np.shape(target_pos))
         for step in range(limit):
             curr_pos = self.action_tool._get_pos()[0].squeeze()
             #print("Current pos shape", np.shape(curr_pos))
@@ -97,7 +97,7 @@ class FoldEnv:
                 t_0 = np.append(target_pos[0, :], float(self.grasp_state))
                 t_1 = np.append(target_pos[1, :], float(self.grasp_state))
                 action.extend([*t_0, *t_1])
-                print("Hi")
+                #print("Hi")
                 #targets = [t_0, t_1]
                 #action.extend([*target_pos, float(self.grasp_state)])
             else:
@@ -143,7 +143,7 @@ class FoldEnv:
         print(preplace_pos)
 
         # reset
-        print("Helloo there")
+        #print("Helloo there")
         reset_pos = np.array([[0.5, 0.5, 0.5], [0.5, 0.5, 0.5]])
         self.movep(reset_pos, speed=5e-3)
 

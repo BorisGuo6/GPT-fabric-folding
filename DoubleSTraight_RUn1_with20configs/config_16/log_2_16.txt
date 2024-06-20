@@ -1,0 +1,98 @@
+Let's start by defining the function `identifyCornerRegions()` which will identify the corners of the cloth and categorize them based on their position.
+
+```python
+import numpy as np
+
+def identifyCornerRegions(corners: np.ndarray) -> list:
+    # Assuming corners is a numpy array with shape (4, 2) where each row is [x, y]
+    top_corners = []
+    bottom_corners = []
+    left_corners = []
+    right_corners = []
+    
+    # Find the median of the y-coordinates to separate top and bottom
+    median_y = np.median(corners[:, 1])
+    # Find the median of the x-coordinates to separate left and right
+    median_x = np.median(corners[:, 0])
+    
+    for corner in corners:
+        if corner[1] < median_y:
+            top_corners.append(corner)
+        else:
+            bottom_corners.append(corner)
+        
+        if corner[0] < median_x:
+            left_corners.append(corner)
+        else:
+            right_corners.append(corner)
+    
+    # Combine the corners with their respective regions
+    corner_regions = []
+    for corner in corners:
+        region = []
+        if corner in top_corners:
+            region.append('top')
+        else:
+            region.append('bottom')
+        
+        if corner in left_corners:
+            region.append('left')
+        else:
+            region.append('right')
+        
+        corner_regions.append((corner, region))
+    
+    return corner_regions
+```
+
+Next, we will define the function `identifyPickandPlace()` which will use the output of `identifyCornerRegions()` to determine the pick and place points.
+
+```python
+def identifyPickandPlace(corner_regions: list) -> tuple:
+    # Find the bottom right corner for picking
+    for corner, region in corner_regions:
+        if 'bottom' in region and 'right' in region:
+            pick_point = corner
+            break
+    
+    # Assuming the cloth is a square/rectangle and the top right quadrant will be half of the x-coordinate
+    # and the same y-coordinate as the top corners
+    for corner, region in corner_regions:
+        if 'top' in region:
+            place_point = np.array([corner[0] + (cloth_center[0] - corner[0]) / 2, corner[1]])
+            break
+    
+    return pick_point, place_point
+```
+
+Now, let's define the function `findDistanceAndDirection()` which calculates the distance and angle between the pick and place points.
+
+```python
+def findDistanceAndDirection(pick_point: np.ndarray, place_point: np.ndarray) -> tuple:
+    # Calculate the distance
+    distance = np.linalg.norm(place_point - pick_point)
+    
+    # Calculate the angle in radians
+    delta_x = place_point[0] - pick_point[0]
+    delta_y = place_point[1] - pick_point[1]
+    angle = np.arctan2(delta_y, delta_x)
+    
+    return distance, angle
+```
+
+Next, we append the chosen pick and place points to the test_pick_pixels and test_place_pixels lists.
+
+```python
+# Assuming pick_point and place_point are already defined
+append_pixels_to_list(img_size, list(pick_point), list(place_point), test_pick_pixels, test_place_pixels)
+```
+
+Now, we convert the 2D pick and place points into 3D coordinates.
+
+```python
+# Assuming pick_point and place_point are already defined
+pick_point_3d = get_world_coord_from_pixel(pick_point, depth, camera_params)
+place_point_3d = get_world_coord_from_pixel(place_point, depth, camera_params)
+```
+
+Finally, we call the `pick_and_place()` function with the 3

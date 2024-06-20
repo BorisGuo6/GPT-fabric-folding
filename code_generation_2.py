@@ -1,3 +1,4 @@
+#This file executes code generation abilities for GPT-Fabric++ without GPT-4V and loads the code from the txt file
 import argparse
 import sys
 import json

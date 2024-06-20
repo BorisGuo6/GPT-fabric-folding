@@ -1,3 +1,5 @@
+#This file executes code generation abilities for GPT-Fabric++ using GPT-4V and uses the new prompt version
+
 import argparse
 import sys
 import json

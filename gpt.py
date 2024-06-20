@@ -1,7 +1,7 @@
 from prompts_generic import MAIN_PROMPT
 import sys
 
-def generate_code_from_gpt(gpt_model, client, prompt, step, count, role, messages=[]):
+def generate_code_from_gpt(gpt_model, client, prompt, step, config_id, count, role, messages=[]):
     message = {"role":role, "content":prompt}
     messages.append(message)
     response = client.chat.completions.create(
@@ -15,11 +15,12 @@ def generate_code_from_gpt(gpt_model, client, prompt, step, count, role, message
                                 )
     
     new_output = ""
-    file = "/home/rajeshgayathri2003/GPT-fabric-folding/log_{}.txt".format(step)
+    file = "/home/rajeshgayathri2003/GPT-fabric-folding/log_{}_{}.txt".format(step, config_id)
     content = response.choices[0].message.content
     
     mode = 'w' if count == 0 else 'a'
     sys.stdout = open(file, mode)
+    print("Printing for config {} step {}".format(config_id, step))
     print(content)
     new_output+=content
     messages.append({"role":"assistant", "content":new_output})
