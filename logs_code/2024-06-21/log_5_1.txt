@@ -1,0 +1,62 @@
+Printing for config 5 step 1 2024-06-21
+I apologize for the confusion. The error occurred because the identifyPickandPlace() function may not return exactly two pick points and two place points. This can happen if the cloth is not rectangular or if the corners are not clearly defined. I will correct this by adding checks to ensure that there are exactly two pick points and two place points.
+
+Here is the corrected code:
+
+```python
+import numpy as np
+
+def identifyCornerRegions(corners):
+    center = np.mean(corners, axis=0)
+    corner_regions = []
+    for corner in corners:
+        if corner[0] < center[0] and corner[1] < center[1]:
+            region = 'top-left'
+        elif corner[0] > center[0] and corner[1] < center[1]:
+            region = 'top-right'
+        elif corner[0] < center[0] and corner[1] > center[1]:
+            region = 'bottom-left'
+        else:
+            region = 'bottom-right'
+        corner_regions.append((corner, region))
+    return corner_regions
+
+def identifyPickandPlace(corners):
+    pick_points = []
+    place_points = []
+    for corner, region in corners:
+        if 'top' in region:
+            pick_points.append(corner)
+        elif 'bottom' in region:
+            place_points.append(corner)
+    return pick_points, place_points
+
+corners = identifyCornerRegions(cloth_corners)
+pick_points, place_points = identifyPickandPlace(corners)
+
+if len(pick_points) != 2 or len(place_points) != 2:
+    raise ValueError('Expected exactly two pick points and two place points')
+
+pick_pos_1 = pick_points[0]
+pick_pos_2 = pick_points[1]
+place_pos_1 = place_points[0]
+place_pos_2 = place_points[1]
+
+print('Pick Point 1:', pick_pos_1)
+print('Pick Point 2:', pick_pos_2)
+print('Place Point 1:', place_pos_1)
+print('Place Point 2:', place_pos_2)
+
+def findDistanceAndDirection(pick_point, place_point):
+    distance = np.linalg.norm(place_point - pick_point)
+    angle = np.arctan2(place_point[1] - pick_point[1], place_point[0] - pick_point[0])
+    return distance, angle
+
+distance_1, angle_1 = findDistanceAndDirection(pick_pos_1, place_pos_1)
+distance_2, angle_2 = findDistanceAndDirection(pick_pos_2, place_pos_2)
+
+print('Distance 1:', distance_1)
+print('Angle 1:', angle_1)
+print('Distance 2:', distance_2)
+print('Angle 2:', angle_2)
+```

@@ -1,0 +1,56 @@
+Printing for config 6 step 0
+```python
+import numpy as np
+
+# Step 1: Define the function identifyCornerRegions()
+def identifyCornerRegions(corners):
+    # corners is a numpy array of shape (4,2)
+    # each row is a corner [x,y]
+    # corners are in clockwise order starting from top left
+    top_left, top_right, bottom_right, bottom_left = corners
+    return [('top_left', top_left), ('top_right', top_right), ('bottom_right', bottom_right), ('bottom_left', bottom_left)]
+```
+
+```python
+# Step 2: Define the function identifyPickandPlace()
+def identifyPickandPlace(corners, center):
+    corner_regions = identifyCornerRegions(corners)
+    # The pick points are the top corners
+    pick_pos_1 = [corner for region, corner in corner_regions if region == 'top_left'][0]
+    pick_pos_2 = [corner for region, corner in corner_regions if region == 'top_right'][0]
+    # The place points are the bottom corners
+    place_pos_1 = [corner for region, corner in corner_regions if region == 'bottom_left'][0]
+    place_pos_2 = [corner for region, corner in corner_regions if region == 'bottom_right'][0]
+    return pick_pos_1, pick_pos_2, place_pos_1, place_pos_2
+```
+
+```python
+# Step 3: Call the function identifyPickandPlace()
+pick_pos_1, pick_pos_2, place_pos_1, place_pos_2 = identifyPickandPlace(cloth_corners, cloth_center)
+```
+
+```python
+# Step 4: Print the values of pick_pos_1, pick_pos_2, place_pos_1, place_pos_2
+print("Pick Position 1: ", pick_pos_1)
+print("Pick Position 2: ", pick_pos_2)
+print("Place Position 1: ", place_pos_1)
+print("Place Position 2: ", place_pos_2)
+```
+
+```python
+# Step 5: Define the function findDistanceAndDirection()
+def findDistanceAndDirection(pick_pos, place_pos):
+    # Calculate the distance between the pick and place points
+    distance = np.sqrt((place_pos[0] - pick_pos[0])**2 + (place_pos[1] - pick_pos[1])**2)
+    # Calculate the angle between the pick and place points
+    angle = np.arctan2(place_pos[1] - pick_pos[1], place_pos[0] - pick_pos[0])
+    return distance, angle
+```
+
+```python
+# Step 6: Call the function findDistanceAndDirection() for both the pick and place points
+distance_1, angle_1 = findDistanceAndDirection(pick_pos_1, place_pos_1)
+distance_2, angle_2 = findDistanceAndDirection(pick_pos_2, place_pos_2)
+print("Distance 1 and Angle 1: ", distance_1, angle_1)
+print("Distance 2 and Angle 2: ", distance_2, angle_2)
+```

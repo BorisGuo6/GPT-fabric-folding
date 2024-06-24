@@ -51,6 +51,7 @@ class FoldEnv:
         self.camera_params = deepcopy(state["camera_params"])
 
         self.action_tool.reset(self.reset_pos)
+        print("verified")
         self.step_simulation()
         self.set_grasp(False)
 

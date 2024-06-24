@@ -101,6 +101,7 @@ class Picker(ActionToolBase):
         pyflex.set_shape_states(shape_state)
         # pyflex.step() # Remove this as having an additional step here may affect the cloth drop env
         self.particle_inv_mass = pyflex.get_positions().reshape(-1, 4)[:, 3]
+        print("Namaskar")
         # print('inv_mass_shape after reset:', self.particle_inv_mass.shape)
 
     @staticmethod
@@ -142,6 +143,7 @@ class Picker(ActionToolBase):
         # print('check pick id:', self.picked_particles, new_particle_pos.shape, self.particle_inv_mass.shape)
         for i in range(self.num_picker):
             if not pick_flag[i] and self.picked_particles[i] is not None:
+                print("Welcome here")
                 new_particle_pos[self.picked_particles[i], 3] = self.particle_inv_mass[
                     self.picked_particles[i]
                 ]  # Revert the mass

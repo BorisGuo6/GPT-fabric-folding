@@ -160,6 +160,23 @@ def append_pixels_to_list(img_size, test_pick_pixel, test_place_pixel, test_pick
     test_pick_pixels.append(test_pick_pixel)
     test_place_pixels.append(test_place_pixel)
     return test_pick_pixel, test_place_pixel
+
+def append_pixels_to_list_bimanual(pick_pos_1, pick_pos_2, place_pos_1, place_pos_2, img_size = 128):
+    # Appending the chosen pickels to the list of the pick and place pixels
+    test_pick_pixels = []
+    test_place_pixels = []
+    test_pick_pixel_1 = np.array([min(img_size - 1, pick_pos_1[0]), min(img_size - 1, pick_pos_1[1])])
+    test_place_pixel_1 = np.array([min(img_size - 1, place_pos_1[0]), min(img_size - 1, place_pos_1[1])])
+
+    test_pick_pixel_2 = np.array([min(img_size - 1, pick_pos_2[0]), min(img_size - 1, pick_pos_2[1])])
+    test_place_pixel_2 = np.array([min(img_size - 1, place_pos_2[0]), min(img_size - 1, place_pos_2[1])])
+
+    #check this part it might cause issues later
+    test_pick_pixels.append(np.vstack((test_pick_pixel_1, test_pick_pixel_2)))
+    test_place_pixels.append(np.vstack((test_place_pixel_1, test_place_pixel_2)))
+
+    return test_pick_pixels, test_place_pixels
+
     
     
 

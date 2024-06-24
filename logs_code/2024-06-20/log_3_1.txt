@@ -1,0 +1,88 @@
+Printing for config 3 step 1
+```python
+import numpy as np
+
+def identifyCornerRegions(corners):
+    # corners is a numpy array of shape (4,2)
+    # each row is a corner [x,y]
+    # returns a list of tuples (corner, region)
+    # region is a string: 'top-left', 'top-right', 'bottom-left', 'bottom-right'
+    
+    # find the center of the cloth
+    center = np.mean(corners, axis=0)
+    
+    # initialize the list of corners and regions
+    corner_regions = []
+    
+    # iterate over the corners
+    for corner in corners:
+        # determine the region of the corner
+        if corner[0] < center[0] and corner[1] < center[1]:
+            region = 'top-left'
+        elif corner[0] > center[0] and corner[1] < center[1]:
+            region = 'top-right'
+        elif corner[0] < center[0] and corner[1] > center[1]:
+            region = 'bottom-left'
+        else:
+            region = 'bottom-right'
+        
+        # append the corner and its region to the list
+        corner_regions.append((corner, region))
+    
+    return corner_regions
+```
+
+```python
+def identifyPickandPlace(corners, center):
+    # corners is a numpy array of shape (4,2)
+    # each row is a corner [x,y]
+    # center is a numpy array of shape (2,)
+    # returns a list of tuples (pick_point, place_point)
+    
+    # identify the corner regions
+    corner_regions = identifyCornerRegions(corners)
+    
+    # initialize the list of pick points and place points
+    pick_and_place = []
+    
+    # iterate over the corner regions
+    for corner, region in corner_regions:
+        # if the corner is at the top, it is a pick point
+        if 'top' in region:
+            pick_point = corner
+            # the place point is along the bottom edge, equidistant from the center to the side
+            if 'left' in region:
+                place_point = [center[0] - (center[0] - corner[0]), center[1] + (center[1] - corner[1])]
+            else:
+                place_point = [center[0] + (corner[0] - center[0]), center[1] + (corner[1] - center[1])]
+            # append the pick point and the place point to the list
+            pick_and_place.append((pick_point, place_point))
+    
+    return pick_and_place
+```
+
+```python
+# call the identifyPickandPlace function with cloth_corners and cloth_center
+pick_and_place = identifyPickandPlace(cloth_corners, cloth_center)
+
+# store the pick points and place points
+pick_pos_1, place_pos_1 = pick_and_place[0]
+pick_pos_2, place_pos_2 = pick_and_place[1]
+
+# print the pick points and place points
+print('Pick Point 1:', pick_pos_1)
+print('Place Point 1:', place_pos_1)
+print('Pick Point 2:', pick_pos_2)
+print('Place Point 2:', place_pos_2)
+```
+
+```python
+def findDistanceAndDirection(pick_point, place_point):
+    # pick_point and place_point are numpy arrays of shape (2,)
+    # returns a tuple (distance, angle)
+    
+    # calculate the distance between the pick point and the place point
+    distance = np.sqrt(np.sum((place_point - pick_point)**2))
+    
+    # calculate the angle between the pick point and the place point
+    angle = np

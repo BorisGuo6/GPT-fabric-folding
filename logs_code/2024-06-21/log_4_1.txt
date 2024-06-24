@@ -1,0 +1,66 @@
+Printing for config 4 step 1 2024-06-21
+```python
+import numpy as np
+
+# Step 1: Define the function identifyCornerRegions()
+def identifyCornerRegions(corners):
+    # corners is a numpy array of shape (4,2)
+    # each row is a corner [x,y]
+    # corners are in clockwise order starting from top left
+    top_left, top_right, bottom_right, bottom_left = corners
+    return [('top_left', top_left), ('top_right', top_right), ('bottom_right', bottom_right), ('bottom_left', bottom_left)]
+```
+
+```python
+# Step 2: Define the function identifyPickandPlace()
+def identifyPickandPlace(corners, center):
+    # corners is a list of tuples from identifyCornerRegions()
+    # center is a numpy array [x,y]
+    # pick points are the top corners
+    # place points are along the bottom edge, equidistant from the center
+    corners_dict = dict(corners)
+    pick_pos_1 = corners_dict['top_left']
+    pick_pos_2 = corners_dict['top_right']
+    bottom_left = corners_dict['bottom_left']
+    bottom_right = corners_dict['bottom_right']
+    bottom_center = (bottom_left + bottom_right) / 2
+    place_pos_1 = bottom_center - (center - bottom_left)
+    place_pos_2 = bottom_center + (bottom_right - center)
+    return pick_pos_1, pick_pos_2, place_pos_1, place_pos_2
+```
+
+```python
+# Step 3: Call the above function
+# This step cannot be performed as cloth_corners and cloth_center are not defined
+# The following is a placeholder for the actual call
+# pick_pos_1, pick_pos_2, place_pos_1, place_pos_2 = identifyPickandPlace(identifyCornerRegions(cloth_corners), cloth_center)
+```
+
+```python
+# Step 4: Print the values
+# This step cannot be performed as pick_pos_1, pick_pos_2, place_pos_1, place_pos_2 are not defined
+# The following is a placeholder for the actual print statements
+# print('pick_pos_1:', pick_pos_1)
+# print('pick_pos_2:', pick_pos_2)
+# print('place_pos_1:', place_pos_1)
+# print('place_pos_2:', place_pos_2)
+```
+
+```python
+# Step 5: Define the function findDistanceAndDirection()
+def findDistanceAndDirection(pick_pos, place_pos):
+    # pick_pos and place_pos are numpy arrays [x,y]
+    # distance is the euclidean distance between the two points
+    # direction is the angle between the two points in radians
+    distance = np.linalg.norm(place_pos - pick_pos)
+    direction = np.arctan2(place_pos[1] - pick_pos[1], place_pos[0] - pick_pos[0])
+    return distance, direction
+```
+
+```python
+# Step 6: Call the above function
+# This step cannot be performed as pick_pos_1, place_pos_1, pick_pos_2, place_pos_2 are not defined
+# The following is a placeholder for the actual call
+# distance_1, direction_1 = findDistanceAndDirection(pick_pos_1, place_pos_1)
+# distance_2, direction_2 = findDistanceAndDirection(pick_pos_2, place_pos_2)
+```

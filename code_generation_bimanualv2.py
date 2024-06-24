@@ -15,9 +15,9 @@ from tqdm import tqdm
 import imageio
 from utils.gpt_utils import system_prompt_bimanual, get_user_prompt, parse_output_bimanual, analyze_images_gpt, gpt_v_demonstrations, set_of_marks
 from openai import OpenAI
-from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error, append_pixels_to_list
+from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error, append_pixels_to_list_bimanual
 from cv2 import imwrite, imread
-from prompts_generic import MAIN_PROMPT_BIMANUAL, ERROR_CORRECTION_PROMPT
+from prompts_2 import PROMPT_1, PROMPT_2, PROMPT_3, PROMPT_4, PROMPT_5, PROMPT_6, MAIN_PROMPT, ERROR_CORRECTION_PROMPT
 from gpt import generate_code_from_gpt
 import traceback
 from contextlib import redirect_stdout
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # env settings
     cached_path = os.path.join("cached configs", args.cached + ".pkl")
     
-    pick_and_place = env.pick_and_place
+    
     img_size = args.img_size
 
     
@@ -85,6 +85,7 @@ if __name__ == "__main__":
             # env settings
             env.reset(config_id=config_id)
             camera_params = env.camera_params
+            pick_and_place = env.pick_and_place
 
             # initial state
             rgb, depth = env.render_image()
@@ -139,7 +140,7 @@ if __name__ == "__main__":
                 
             elif args.inputs == "llm":
                 
-                
+                PROMPTS = [PROMPT_1, PROMPT_2, PROMPT_3, PROMPT_4, PROMPT_5, PROMPT_6]
                 step = steps[args.task]
                 for i in range(0, step):
                     print("############Step{}#############".format(i))
@@ -151,7 +152,6 @@ if __name__ == "__main__":
                     instruction = analyze_images_gpt([start_image, last_image], args.task, i, args.eval_type)
                     print(instruction)
 
-                    last_image = os.path.join(demo_root_path, str(i+1) + ".png")
                     image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", str(i)+".png")
                     cloth_center = find_pixel_center_of_cloth(image_path)
                     print(cloth_center)
@@ -167,75 +167,77 @@ if __name__ == "__main__":
                     # }
                     # instruction = instructions_dict[i][args.task]
                     
-                    '''
-                    start_image = "/home/rajeshgayathri2003/GPT-fabric-folding/videos/CornersInward/square/2024-06-05/251/trial1.png"
-                    last_image = "/home/rajeshgayathri2003/GPT-fabric-folding/test_goal_21.png"
-                    instruction = analyze_images_gpt([start_image, last_image], args.task, 0, args.eval_type)
-                    print(instruction)
-                    '''
                     
-                    new_prompt = MAIN_PROMPT_BIMANUAL.replace("[INSERT TASK]", instruction)
-                    messages = []
+                    new_prompt = MAIN_PROMPT
+                    messages = [{"role": "system", "content":new_prompt}]
                     # generate = False
                     # if generate:
-                    content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, config_id, 0, "system", messages)
+                    for val, prompt in enumerate(PROMPTS):
+                        if prompt == PROMPT_2:
+                            prompt = prompt.replace("[INSERT TASK]", instruction)
+
+                        content = generate_code_from_gpt(args.gpt_model, client, prompt, i, config_id, val, "user", messages)
                     
-                    completed = False
-                    new_prompt = ""
-                    error = None
+                        completed = False
+                        new_prompt = ""
+                        error = None
 
-                    loc = locals()
-                    error_count = 0
+                        loc = locals()
+                        error_count = 0
                                 
-                    while not(completed):
-                        flag = False
-                        code_block = content.split("```python")
-                        sys.stdout = sys.__stdout__
-                        block_number = 0
-                        for block in code_block:
-                            if len(block.split("```")) > 1:
-                                code = block.split("```")[0]
-                                block_number+=1
-                                            
-                                try:       
-                                    exec(code, globals(), loc)
-                                        
-                                except Exception:
-                                    error_message = traceback.format_exc()
-                                    print(error_message)
-                                    new_prompt+=ERROR_CORRECTION_PROMPT.replace("[INSERT BLOCK NUMBER]", str(block_number)).replace("[INSERT ERROR MESSAGE]", error_message)
-                                    new_prompt+="\n"
-                                    error = True
-                                    flag = True
-                                    error_count+=1
-                                    continue
-                                    
-                                else:    
-                                    if not(flag):
-                                        error = False        
-                                                    
-                            else:
-                                    print("passc")
+                        while not(completed):
+                            if error_count>=3:
+                                messages = [{"role": "system", "content":new_prompt}]
+                                content = generate_code_from_gpt(args.gpt_model, client, prompt, i, config_id, val, "user", messages)
+                            flag = False
+                            sys.stdout = sys.__stdout__
+                            block_number = 0
+                          
+                            code_block = content.split("```python")
 
-                        print("done")
-                                    
-                        if error:
-                            content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, config_id, 0, "user", messages)
+                            code = [block.split("```")[0] for block in code_block if len(block.split("```")) > 1]
+                            code = code[0] if len(code)>0 else None
+                            if code is None:
+                                print(code_block)
+                                break
+                            try:       
+                                exec(code, globals(), loc)
+                                            
+                            except Exception:
+                                error_count+=1
+                                if error_count>3:
+                                    continue
+                                error_message = traceback.format_exc()
+                                print(error_message)
+                                new_prompt+=ERROR_CORRECTION_PROMPT.replace("[INSERT BLOCK NUMBER]", str(block_number)).replace("[INSERT ERROR MESSAGE]", error_message)
+                                new_prompt+="\n"
+                                error = True
+                                flag = True
+                                content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, config_id, val, "user", messages)
+                                continue
                                         
-                        else:
-                            error = False
-                            if not(error) and not(flag):
-                                completed = True
-                                rgb, depth = env.render_image()
-                                depth_save = depth.copy() * 255
-                                depth_save = depth_save.astype(np.uint8)
-                                imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
-                                imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
-                                rgbs.append(rgb)
-                                print("appended")
-                                #print(pick_point)
-                                                
-                                print("The value is", completed)
+                            else:    
+                                if not(flag):
+                                    error = False
+                                    completed = True
+                                    rgb, depth = env.render_image()
+                                    depth_save = depth.copy() * 255
+                                    depth_save = depth_save.astype(np.uint8)
+                                    imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
+                                    imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
+                                    rgbs.append(rgb)
+                                    print("appended")
+                                    #print(pick_point)
+                                                    
+                                    print("The value is", completed)        
+
+                            print("done")
+                                        
+                                
+                                            
+                            
+                                
+                                    
                                     
                     # file = "log_{}_1.txt".format(i)
                     # print(file)
@@ -258,46 +260,46 @@ if __name__ == "__main__":
                     
                     
                     # Appending the chosen pickels to the list of the pick and place pixels
-                    test_pick_pixel_1 = np.array([min(args.img_size - 1, pick_pos_1[0]), min(args.img_size - 1, pick_pos_1[1])])
-                    test_place_pixel_1 = np.array([min(args.img_size - 1, place_pos_1[0]), min(args.img_size - 1, place_pos_1[1])])
+                    # test_pick_pixel_1 = np.array([min(args.img_size - 1, pick_pos_1[0]), min(args.img_size - 1, pick_pos_1[1])])
+                    # test_place_pixel_1 = np.array([min(args.img_size - 1, place_pos_1[0]), min(args.img_size - 1, place_pos_1[1])])
 
-                    ###################################
-                    #Add the condition such that the distance between the two pickers is greater than the radius of the picker
-                    ###################################
+                    # ###################################
+                    # #Add the condition such that the distance between the two pickers is greater than the radius of the picker
+                    # ###################################
 
-                    test_pick_pixel_2 = np.array([min(args.img_size - 1, pick_pos_2[0]), min(args.img_size - 1, pick_pos_2[1])])
-                    test_place_pixel_2 = np.array([min(args.img_size - 1, place_pos_2[0]), min(args.img_size - 1, place_pos_2[1])])
+                    # test_pick_pixel_2 = np.array([min(args.img_size - 1, pick_pos_2[0]), min(args.img_size - 1, pick_pos_2[1])])
+                    # test_place_pixel_2 = np.array([min(args.img_size - 1, place_pos_2[0]), min(args.img_size - 1, place_pos_2[1])])
 
-                    #check this part it might cause issues later
-                    test_pick_pixels.append(np.vstack((test_pick_pixel_1, test_pick_pixel_2)))
-                    test_place_pixels.append(np.vstack((test_place_pixel_1, test_place_pixel_2)))
+                    # #check this part it might cause issues later
+                    # test_pick_pixels.append(np.vstack((test_pick_pixel_1, test_pick_pixel_2)))
+                    # test_place_pixels.append(np.vstack((test_place_pixel_1, test_place_pixel_2)))
 
-                    print(test_pick_pixel_1)
-                    print(type(test_pick_pixel_1))
+                    # print(test_pick_pixel_1)
+                    # print(type(test_pick_pixel_1))
                     
-                    test_pick_pos_1 = get_world_coord_from_pixel(test_pick_pixel_1, depth, camera_params)
-                    test_place_pos_1= get_world_coord_from_pixel(test_place_pixel_1, depth, camera_params)
+                    # test_pick_pos_1 = get_world_coord_from_pixel(test_pick_pixel_1, depth, camera_params)
+                    # test_place_pos_1= get_world_coord_from_pixel(test_place_pixel_1, depth, camera_params)
 
                     
-                    test_pick_pos_2 = get_world_coord_from_pixel(test_pick_pixel_2, depth, camera_params)
-                    test_place_pos_2= get_world_coord_from_pixel(test_place_pixel_2, depth, camera_params)
+                    # test_pick_pos_2 = get_world_coord_from_pixel(test_pick_pixel_2, depth, camera_params)
+                    # test_place_pos_2= get_world_coord_from_pixel(test_place_pixel_2, depth, camera_params)
                     
                     
                     
-                    test_pick_pos = np.vstack((test_pick_pos_1, test_pick_pos_2))
-                    test_place_pos = np.vstack((test_place_pos_1, test_place_pos_2))
+                    # test_pick_pos = np.vstack((test_pick_pos_1, test_pick_pos_2))
+                    # test_place_pos = np.vstack((test_place_pos_1, test_place_pos_2))
                     
-                    #print(np.shape(test_pick_pos))
-                    # pick & place
-                    env.pick_and_place(test_pick_pos.copy(), test_place_pos.copy())
+                    # #print(np.shape(test_pick_pos))
+                    # # pick & place
+                    # env.pick_and_place(test_pick_pos.copy(), test_place_pos.copy())
 
-                    # render & update frames & save
-                    rgb, depth = env.render_image()
-                    depth_save = depth.copy() * 255
-                    depth_save = depth_save.astype(np.uint8)
-                    imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
-                    imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
-                    rgbs.append(rgb)
+                    # # render & update frames & save
+                    # rgb, depth = env.render_image()
+                    # depth_save = depth.copy() * 255
+                    # depth_save = depth_save.astype(np.uint8)
+                    # imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
+                    # imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
+                    # rgbs.append(rgb)
 
                 particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
                 with open(os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "info.pkl"), "wb+") as f:

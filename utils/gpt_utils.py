@@ -31,12 +31,13 @@ PLEASE OUTPUT THE TWO PICK POINT AND THE PLACE POINTs FIRST AND THEN OUTPUT THE 
 '''
 image_analysis_instruction_bimanual = ''' 
 I will be providing you with two images. In each image, you will see a background that's divided into four quadrants with alternating shades of gray. Think of this background as a flat surface on which a cloth is kept.
-This cloth could be seen in the centre of these images as a geometric shape coloured with blue and yellow.
-The first image has its corners marked by black dots. These points are also numbered. 
+This cloth could be seen in the centre of these images as a geometric shape coloured with orange and pink. The pick points are marked by black dots on the first image and the direction of the fold is indicated by the two black arrows. 
+
+Keep in mind that theer are two pick points and two place points in this case. 
 
 This sequence of action of picking a point on the cloth and place it somewhere results in a fold, whose result can be seen in the next image. So basically we are folding the cloth in the first image to get to the second image.
 I want you to describe the instructions for the folding step that someone could follow to achieve the same fold. 
-IMPORTANT: INLCUDE ONE PICKING AND ONE PLACING POINT INFORMATION IN THE RESPONSE. YOU MUST SPECIFY WHERE SHOULD THE PLACING POINTS SHOULD BE.
+IMPORTANT: INLCUDE TWO PICKING AND TWO PLACING POINT INFORMATION IN THE RESPONSE. 
 
 RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY:
 - Instructions: The instructions for the given folding step and mention which point is located at the top.
@@ -127,6 +128,11 @@ gpt_v_demonstrations = {
             "gpt-demonstrations": []
         },
         "DoubleStraight": {
+            "data": [],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": []
+        },
+        "DoubleStraightBimanual": {
             "data": [],
             "instruction": "- Use this pair of images to guide your response",
             "gpt-demonstrations": []
@@ -322,7 +328,7 @@ def analyze_images_gpt(image_list, task, action_id, eval_type):
         user_prompt_dictionary = {
             "role": "user",
             "content": [
-                {"type": "text", "text": image_analysis_instruction},
+                {"type": "text", "text": image_analysis_instruction_bimanual},
                 {
                     "type": "image_url",
                     "image_url": {
@@ -360,7 +366,7 @@ def analyze_images_gpt(image_list, task, action_id, eval_type):
                     "content": [
                         {
                             "type": "text",
-                            "text": "You will be given some demonstration user prompts and the corresponding output that is expected from you. Use these examples to guide your response for the actual query."
+                            "text": system_prompt_bimanual
                         }
                     ]
                 }
@@ -369,7 +375,7 @@ def analyze_images_gpt(image_list, task, action_id, eval_type):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": image_analysis_instruction},
+                        {"type": "text", "text": image_analysis_instruction_bimanual},
                         {
                             "type": "image_url",
                             "image_url": {
@@ -391,7 +397,7 @@ def analyze_images_gpt(image_list, task, action_id, eval_type):
 
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
         response = response.json()
-        print(response)
+
         if 'choices' in response:
             text = response['choices'][0]['message']['content']
             match = re.search(r'Instructions: ([^\n]+)\.', text)
