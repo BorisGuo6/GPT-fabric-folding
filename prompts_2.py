@@ -35,12 +35,15 @@ Mark the code separately by ```python and ``` tags.
 
 PROMPT_2 = \
 """
+AVAILABLE FUNCTIONS:
+1. identifyCornerRegions()
+
 VARIABLES:
 The following variables have already been defined. 
 1. cloth_corners -> This is a numpy array that contains the corners of the cloth. It is an input to the identifyCornerRegions() function
 2. cloth_center -> This is the center of the cloth.
 
-The user command is "[INSERT TASK]". Based on this information and the output of identifyCornerRegions(), define a function called identifyPickandPlace() which outputs the pick points and the place points. The cloth_corners and cloth_center are inputs to this function.
+The user command is "[INSERT TASK]". Based on this information and the output of identifyCornerRegions(), define a function called identifyPickandPlace() which outputs the pick points and the place points. The function has 4 output values which are numpy arrays. The cloth_corners and cloth_center are inputs to this function.
 The two pick points are stored as pick_pos_1 and pick_pos_2 and the two place points are stored as place_pos_1 and place_pos_2.
 Mark the code separately by ```python and ``` tags.
 """
@@ -53,19 +56,27 @@ Mark the code separately by ```python and ``` tags.
 
 PROMPT_4 = \
 """
+AVAILABLE FUNCTIONS:
+1. identifyPickandPlace
+2. append_pixels_to_list_bimanual
+
 VARIABLES:
 1. img_size -> This is an input to the function append_pixels_to_list
 2. pick_point -> This is an input to the function append_pixels_to_list
 3. place_point -> This is an input to the function append_pixels_to_list
 
 CODE GENERATION:
-Find the pick_point and place_point using the identifyPickandPlace() function.
-Use append_pixels_to_list_bimanual() function to append pick_pos_1, pick_pos_2, place_pos_1 and place_pos_2 to the list. The last parameter is img_size and it has already been defined. 
+Find the pick_point and place_point using the identifyPickandPlace() function. 
+Check if the four points are not None. If the condition is True set the variable called flag to True. Use append_pixels_to_list_bimanual() function to append pick_pos_1, pick_pos_2, place_pos_1 and place_pos_2 to the list. The last parameter is img_size and it has already been defined. 
+If the condition fails, set flag to False.
 Mark the code separately by ```python and ``` tags.
 """
 
 PROMPT_5 = \
 """
+AVAILABLE FUNCTIONS:
+1. get_world_coord_from_pixel
+
 VARIABLES:
 1.depth -> This is an input to the get_world_coord_from_pixel function
 2. camera_params -> This is an input to the get_world_coord_from_pixel function
@@ -77,6 +88,9 @@ Mark the code separately by ```python and ``` tags.
 
 PROMPT_6 = \
 """
+AVAILABLE FUNCTIONS:
+1. pick_and_place
+
 numpy's vstack function is used to stack pick_world_1 and pick_world_2 to get test_pick_pos.
 Similarly, numpy's vstack function is used to stack place_world_1 and place_world_2 to get test_place pos
 test_pick_pos and test_place_pos are given as inputs to the pick_and_place function. The third parameter of pick_and_place need not be specified.

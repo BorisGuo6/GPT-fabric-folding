@@ -165,13 +165,16 @@ if __name__ == "__main__":
                     error = None
 
                     loc = locals()
-                    
+                    error_count = 0
                     while not(completed):
+                        
                         flag = False
                         code_block = content.split("```python")
                         sys.stdout = sys.__stdout__
                         block_number = 0
                         for block in code_block:
+                            if error_count>5:
+                                content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, config_id, 0, "system", messages)
                             if len(block.split("```")) > 1:
                                 code = block.split("```")[0]
                                 block_number+=1
@@ -180,6 +183,9 @@ if __name__ == "__main__":
                                     
                                     exec(code, globals(), loc)
                                 except Exception:
+                                    error_count+=1
+                                    if error_count>5:
+                                        continue
                                     error_message = traceback.format_exc()
                                     print(error_message)
                                     new_prompt+=ERROR_CORRECTION_PROMPT.replace("[INSERT BLOCK NUMBER]", str(block_number)).replace("[INSERT ERROR MESSAGE]", error_message)

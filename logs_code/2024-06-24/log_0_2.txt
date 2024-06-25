@@ -1,0 +1,73 @@
+Printing for config 0 step 2 2024-06-24
+```python
+import numpy as np
+
+# Step 1: Define the function identifyCornerRegions()
+def identifyCornerRegions(cloth_corners):
+    # Sort the corners based on their y-coordinate
+    sorted_corners = sorted(cloth_corners, key=lambda x: x[1])
+    
+    # The top corners are the first two elements in the sorted list
+    top_corners = sorted_corners[:2]
+    
+    # The bottom corners are the last two elements in the sorted list
+    bottom_corners = sorted_corners[2:]
+    
+    # Sort the top and bottom corners based on their x-coordinate
+    top_corners = sorted(top_corners, key=lambda x: x[0])
+    bottom_corners = sorted(bottom_corners, key=lambda x: x[0])
+    
+    # The left corners are the first elements in the top and bottom lists
+    left_corners = [top_corners[0], bottom_corners[0]]
+    
+    # The right corners are the last elements in the top and bottom lists
+    right_corners = [top_corners[1], bottom_corners[1]]
+    
+    # Return the corners and their regions
+    return [('top_left', top_corners[0]), ('top_right', top_corners[1]), 
+            ('bottom_left', bottom_corners[0]), ('bottom_right', bottom_corners[1])]
+```
+
+```python
+# Step 2: Define the function identifyPickandPlace()
+def identifyPickandPlace(cloth_corners, cloth_center):
+    # Identify the corners and their regions
+    corners = identifyCornerRegions(cloth_corners)
+    
+    # The pick points are the top left and bottom left corners
+    pick_points = [corner[1] for corner in corners if 'left' in corner[0]]
+    
+    # The place points are the top right and bottom right corners
+    place_points = [corner[1] for corner in corners if 'right' in corner[0]]
+    
+    # Return the pick and place points
+    return pick_points, place_points
+```
+
+```python
+# Step 3: Call the function identifyPickandPlace() and print the output
+pick_points, place_points = identifyPickandPlace(cloth_corners, cloth_center)
+print('Pick Points:', pick_points)
+print('Place Points:', place_points)
+```
+
+```python
+# Step 4: Define the function findDistanceAndDirection()
+def findDistanceAndDirection(pick_point, place_point):
+    # Calculate the distance between the pick and place points
+    distance = np.linalg.norm(np.array(pick_point) - np.array(place_point))
+    
+    # Calculate the angle between the pick and place points
+    angle = np.arctan2(place_point[1] - pick_point[1], place_point[0] - pick_point[0])
+    
+    # Return the distance and angle
+    return distance, angle
+```
+
+```python
+# Step 5: Call the function findDistanceAndDirection() for each pair of pick and place points
+for pick_point, place_point in zip(pick_points, place_points):
+    distance, angle = findDistanceAndDirection(pick_point, place_point)
+    print('Distance:', distance)
+    print('Angle:', angle)
+```

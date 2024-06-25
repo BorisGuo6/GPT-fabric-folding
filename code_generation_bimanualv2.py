@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     for run in tqdm(range(args.total_runs)):
         for config_id in tqdm(range(env.num_configs)):
-            if config_id ==10:
+            if config_id ==5:
                 break
 
             rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
@@ -186,9 +186,11 @@ if __name__ == "__main__":
                         error_count = 0
                                 
                         while not(completed):
+                            print("start")
                             if error_count>=3:
                                 messages = [{"role": "system", "content":new_prompt}]
                                 content = generate_code_from_gpt(args.gpt_model, client, prompt, i, config_id, val, "user", messages)
+                                error_count = 0
                             flag = False
                             sys.stdout = sys.__stdout__
                             block_number = 0
@@ -216,23 +218,34 @@ if __name__ == "__main__":
                                 content = generate_code_from_gpt(args.gpt_model, client, new_prompt, i, config_id, val, "user", messages)
                                 continue
                                         
-                            else:    
-                                if not(flag):
+                            else: 
+                                if prompt == PROMPT_4:
+                                    if (flag):
+                                        error = False
+                                        completed = True
+                                        print("appended")
+                                        #print(pick_point)
+                                                        
+                                        print("The value is", completed)
+                                        
+                                    else:
+                                        print(":(((")
+                                        error_count = 3
+                                        continue
+                                else:
                                     error = False
                                     completed = True
-                                    rgb, depth = env.render_image()
-                                    depth_save = depth.copy() * 255
-                                    depth_save = depth_save.astype(np.uint8)
-                                    imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
-                                    imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
-                                    rgbs.append(rgb)
-                                    print("appended")
-                                    #print(pick_point)
-                                                    
-                                    print("The value is", completed)        
+                                          
 
                             print("done")
-                                        
+
+                    
+                    rgb, depth = env.render_image()
+                    depth_save = depth.copy() * 255
+                    depth_save = depth_save.astype(np.uint8)
+                    imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
+                    imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
+                    rgbs.append(rgb)                    
                                 
                                             
                             
