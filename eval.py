@@ -14,10 +14,12 @@ import imageio
 from utils.gpt_utils import system_prompt, get_user_prompt, parse_output, analyze_images_gpt, gpt_v_demonstrations
 from openai import OpenAI
 from slurm_utils import find_corners, find_pixel_center_of_cloth, get_mean_particle_distance_error
+from metrics import process_mesh_folder
 
 from openai import OpenAI
 # TODO: Use your own API key for performing the experiments
-client = OpenAI(api_key="api_key")
+# client = OpenAI(api_key="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")
+client = OpenAI(api_key="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")
 
 def get_mask(depth):
     mask = depth.copy()
@@ -45,7 +47,7 @@ def main():
     args = parser.parse_args()
 
     # IMPORTANT - This model will get deprecated on Dec 6, 2024. Kindly use any newer OpenAI models with vision reasoning abilities
-    gpt_vision_model = "gpt-4-vision-preview"
+    gpt_vision_model = "gpt-4o"
 
     # task
     task = args.task
@@ -57,6 +59,8 @@ def main():
         steps = 3
     elif task == "DoubleTriangle":
         steps = 2
+    elif task == "Trousers":
+        steps = 3
 
     # env settings
     cached_path = os.path.join("cached configs", args.cached + ".pkl")
@@ -76,6 +80,8 @@ def main():
         sys.stdout = open(output_file, 'w', buffering=1)
 
         for config_id in tqdm(range(env.num_configs)):
+            if config_id<=29:
+                continue
             rgb_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
             depth_save_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth")
             if not os.path.exists(rgb_save_path):
@@ -94,12 +100,14 @@ def main():
 
             # initial state
             rgb, depth = env.render_image()
-            depth_save = depth.copy() * 255
+            depth_save = depth.copy() * 255 
             depth_save = depth_save.astype(np.uint8)
             imageio.imwrite(os.path.join(depth_save_path, "0.png"), depth_save)
             imageio.imwrite(os.path.join(rgb_save_path, "0.png"), rgb)
             rgbs.append(rgb)
-            
+            particle_pos = pyflex.get_positions().reshape(-1,4)[:,:3]
+            output_file = os.path.join(rgb_save_path, "initial_pcd.txt")
+            np.savetxt(output_file, particle_pos)
             # Get the position of the center of the cloth in the initial configuration to pivot the required folds
             image_path = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "depth", "0.png")
             cloth_center = find_pixel_center_of_cloth(image_path)
@@ -142,7 +150,7 @@ def main():
                     no_output = True
                     while no_output:
                         # getting the system and user prompts for our given request
-                        user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task, None)
+                        user_prompt = get_user_prompt(cloth_corners, cloth_center, True, instruction, args.task, i+1)
                         print(user_prompt)
 
                         # Getting the demonstrations for in-context learning
@@ -150,21 +158,21 @@ def main():
                         demonstration_dictionary_list = []
 
                         # This array will be empty for zero-shot evaluation of GPT-Fabric
-                        if len(indices) != 0:
-                            gpt_demonstrations_path = os.path.join("utils", "gpt-demonstrations", args.task, "demonstrations.json")
-                            with open(gpt_demonstrations_path, 'r') as f:
-                                gpt_demonstrations = json.load(f)
-                            for index in indices:
-                                step_dictionary = gpt_demonstrations[str(index)][str(i + 1)]
-                                user_prompt_dictionary = {
-                                    "role": "user",
-                                    "content": step_dictionary["user-prompt"]
-                                }
-                                assistant_response_dictionary = {
-                                    "role": "assistant",
-                                    "content": step_dictionary["assistant-response"]
-                                }
-                                demonstration_dictionary_list += [user_prompt_dictionary, assistant_response_dictionary]
+                        # if len(indices) != 0:
+                        #     gpt_demonstrations_path = os.path.join("utils", "gpt-demonstrations", args.task, "demonstrations.json")
+                        #     with open(gpt_demonstrations_path, 'r') as f:
+                        #         gpt_demonstrations = json.load(f)
+                        #     for index in indices:
+                        #         step_dictionary = gpt_demonstrations[str(index)][str(i + 1)]
+                        #         user_prompt_dictionary = {
+                        #             "role": "user",
+                        #             "content": step_dictionary["user-prompt"]
+                        #         }
+                        #         assistant_response_dictionary = {
+                        #             "role": "assistant",
+                        #             "content": step_dictionary["assistant-response"]
+                        #         }
+                        #         demonstration_dictionary_list += [user_prompt_dictionary, assistant_response_dictionary]
 
                         response = client.chat.completions.create(
                             model=args.gpt_model,
@@ -221,12 +229,17 @@ def main():
                 imageio.imwrite(os.path.join(depth_save_path, str(i + 1) + ".png"), depth_save)
                 imageio.imwrite(os.path.join(rgb_save_path, str(i + 1) + ".png"), rgb)
                 rgbs.append(rgb)
+                particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+                output_file = os.path.join(rgb_save_path, "step_"+str(i)+"_pcd.txt")
+                np.savetxt(output_file, particle_pos)
 
             # Saving the total time taken for this particular configuration
             time_array[config_id] = np.mean(steps_time)
 
             # Saving the final fold configuration in a pickle file
             particle_pos = pyflex.get_positions().reshape(-1, 4)[:, :3]
+            output_file = os.path.join(rgb_save_path, "fin_pcd.txt")
+            np.savetxt(output_file, particle_pos)
             with open(os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "info.pkl"), "wb+") as f:
                 data = {"pick": test_pick_pixels, "place": test_place_pixels, "pos": particle_pos}
                 pickle.dump(data, f)
@@ -251,10 +264,22 @@ def main():
             env.rgb_array = []
 
             # Getting the score corresponding to the current run and the current config Id
-            eval_dir = os.path.join("eval result", args.task, args.cached, str(date_today), str(run))
-            expert_dir = os.path.join("data", "demonstrations", args.task, args.cached)
-            score = get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, args.task, config_id)
-            obtained_scores[run,config_id] = score[0]
+            # eval_dir = os.path.join("eval result", args.task, args.cached, str(date_today), str(run), str(config_id), "rgb")
+            # expert_dir = os.path.join("data", "demonstrations", args.task, args.cached, str(env.current_config["cloth_index"]))
+
+            # pcd_traj_path = os.path.join(expert_dir, "pcd_traj.h5")
+            # pcd_traj2_path = os.path.join(expert_dir, "pcd_traj2.h5")
+            # initial_path = os.path.join(eval_dir, "initial_pcd.txt")
+            # fin_path = os.path.join(eval_dir, "fin_pcd.txt")
+            
+            # if os.path.exists(initial_path) and os.path.exists(fin_path) and os.path.exists(pcd_traj_path) and os.path.exists(pcd_traj2_path):
+            #     print(f"Processing {eval_dir}...")
+            #     score,runf,r,t = process_mesh_folder(eval_dir, initial_path, fin_path, pcd_traj_path, pcd_traj2_path,False)
+            # else:
+            #     print(f"Not Processing {eval_dir}...")
+            # print(str(env.current_config["cloth_index"]),"Result:",score,",",runf,",",r,",",t)
+
+            # obtained_scores[run,config_id] = score
 
     # Saving the matrix corresponding to the obtained scores
     matrix_save_folder = os.path.join("position errors", args.task, args.cached)

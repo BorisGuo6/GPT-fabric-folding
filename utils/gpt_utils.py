@@ -2,6 +2,7 @@ import re
 import numpy as np
 import os 
 import random
+import json
 
 system_prompt = '''**Cloth Folding Robot**
 Role: You are the brain of a cloth folding robot. The robot would pick one spot on the cloth (referred to as the "pick point"), lift it by a small amount, drag it over to another spot (referred to as "the place point"), and finally release it.
@@ -23,16 +24,21 @@ PLEASE OUTPUT THE PICK POINT AND THE PLACE POINT FIRST AND THEN OUTPUT THE THOUG
 '''
 
 image_analysis_instruction = '''
-I will be providing you with two images. In each image, you will see a background that's divided into four quadrants with alternating shades of gray. Think of this background as a flat surface on which a cloth is kept.
-This cloth could be seen in the centre of these images as a geometric shape coloured with orange and pink.
+I will be providing you with an image. In this image, you will see a background that's divided into four quadrants with alternating shades of gray. Think of this background as a flat surface on which a cloth is kept.
+This cloth could be seen in the centre of these images with pink and yellow.
 There is also a black arrow in the first image, which essentially represents an action where someone would pick a point on the cloth corresponding to the black dot from where the arrow originates. This would be represented as the picking point. On the other hand, the point where the tip of the black arrow is located corresponds to the location where the chosen picking point is placed. This is referred to as the placing point.
 
-This sequence of action of picking a point on the cloth and place it somewhere results in a fold, whose result can be seen in the next image. So basically we are folding the cloth in the first image to get to the second image.
+This sequence of action of picking a point on the cloth and place it somewhere results in a fold. So basically we are folding the cloth in the first image to get to the second image.
 I want you to describe the instructions for the folding step that someone could follow to achieve the same fold. 
-Look at the relative location of the tip of the arrow with respect to the center of the image. Depending on whether this is near the center or a diagonally opposite point or a point along the given edge, choose your placing point as the center or a diagonally opposite point or a point along the given edge respectively. 
+Look at the relative location of the tip of the arrow with respect to the center of the image. Depending on whether this is near the center or a diagonally opposite point , choose your placing point as the center or a diagonally opposite point respectively. 
+
+the picking point is at the black dot and the placing point is at the tip of the arrow, find out the location relatived to cloth in detailed
 
 IMPORTANT: INLCUDE THE PICKING AND PLACING POINT INFORMATION IN THE RESPONSE. YOU MUST SPECIFY WHERE SHOULD THE PLACING POINT BE.
 
+IMPORTANT: Do not use terms like 'dot' or 'arrow' or 'horizontal' in the instructions. Instead, describe the spatial location using terms like 'bottom left' and 'top right'
+Similarly, for identifying other corners, apply the same double-check of both coordinates. Ensure each chosen point meets both conditions (x and y) strictly to avoid incorrect selections.
+                               
 RETURN YOUR OUTPUT IN THE BELOW FORMAT ONLY:
 - Instructions: The instructions for the given folding step.
 - Explanation: Why did you choose this pair of picking and placing points.
@@ -57,6 +63,11 @@ gpt_v_demonstrations = {
             "gpt-demonstrations": []
         },
         "DoubleStraight": {
+            "data": [],
+            "instruction": "- Use this pair of images to guide your response",
+            "gpt-demonstrations": []
+        },
+        "Trousers": {
             "data": [],
             "instruction": "- Use this pair of images to guide your response",
             "gpt-demonstrations": []
@@ -170,7 +181,7 @@ def analyze_images_gpt(image_list, task, action_id, eval_type, gpt_vision_model)
     import base64
     import requests
     # TODO: Use your own API key for performing the experiments
-    api_key="api_key"
+    api_key="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"
 
     # Function to encode image
     def encode_image(image_path):
@@ -236,7 +247,11 @@ def analyze_images_gpt(image_list, task, action_id, eval_type, gpt_vision_model)
                     "content": [
                         {
                             "type": "text",
-                            "text": "You will be given some demonstration user prompts and the corresponding output that is expected from you. Use these examples to guide your response for the actual query."
+                            "text": "You will be given some demonstration user prompts and the corresponding output that is expected from you.\
+                                  Use these examples to guide your response for the actual query. \
+                                Do not use terms like 'dot' or 'arrow' or 'horizontal' in the instructions. \
+                                Instead, describe the spatial location using terms like 'bottom left' and 'bottom right.' \
+                                "
                         }
                     ]
                 }
@@ -252,12 +267,12 @@ def analyze_images_gpt(image_list, task, action_id, eval_type, gpt_vision_model)
                                 "url": f"data:image/jpeg;base64,{first_image}"
                             }
                         },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{second_image}"
-                            }
-                        }
+                        # {
+                        #     "type": "image_url",
+                        #     "image_url": {
+                        #         "url": f"data:image/jpeg;base64,{second_image}"
+                        #     }
+                        # }
                     ]
                 }
             ],
@@ -266,13 +281,27 @@ def analyze_images_gpt(image_list, task, action_id, eval_type, gpt_vision_model)
         }
 
         response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+        # Check the status code and handle errors
+        if response.status_code == 200:
+            print("Request was successful!")
+            response_data = response.json()
+            print("Response data:", json.dumps(response_data, indent=4))
+        else:
+            print(f"Request failed with status code {response.status_code}: {response.text}")
+            assert(0)
         response = response.json()
         if 'choices' in response:
             text = response['choices'][0]['message']['content']
             match = re.search(r'Instructions: ([^\n]+)\.', text)
             if match:
                 instruction = match.group(1)
-    return instruction
+    return instruction + ".     For reference only:\
+Choose a point that is located on the top left corner of the cloth relative to the center means to Choose a point that is strictly to the left and up the center (i.e., x-coordinate < center x, and y-coordinate < center y).\
+Choose a point that is located on the bottom right corner of the cloth relative to the center means to Choose a point that is strictly to the right and below the center (i.e., x-coordinate > center x, and y-coordinate > center y).\
+Choose a point that is located on the top right corner of the cloth relative to the center means to Choose a point that is strictly to the right and up the center (i.e., x-coordinate > center x, and y-coordinate < center y).\
+Choose a point that is located on the bottom left corner of the cloth relative to the center means to Choose a point that is strictly to the left and below the center (i.e., x-coordinate < center x, and y-coordinate > center y).\
+Similarly, for identifying other corners, apply the same double-check of both coordinates. Ensure each chosen point meets both conditions (x and y) strictly to avoid incorrect selections.\
+Points that only partially meet these conditions should not be chosen."
 
 if __name__ == "__main__":
     # Getting the responses for the first folding step

@@ -1,0 +1,9 @@
+{
+    "initial_real": 23.135617944622535,
+    "initial_target": 22.853045511711116,
+    "initial_loU": 0.9757207890743551,
+    "coverage_real": 8.368861526883691,
+    "coverage_target": 7.887297632494648,
+    "loU_with_target": 0.5383411580594679,
+    "RUnf_with_target": 0.21813514965369066
+}

@@ -17,10 +17,11 @@ def save_depth_as_matrix(image_path, output_path = None, save_matrix = True, sho
             image = image.resize((128, 128))
 
     image_array = np.array(image) / 255
-
+    print("image",np.min(image_array),np.max(image_array),"\n")
     mask = image_array.copy()
-    mask[mask > 0.646] = 0
-    mask[mask != 0] = 1
+    mask[mask >= 0.99999] = 0
+    # mask[mask > 0] = 1
+    mask[mask != 0.0] = 1
 
     image_array = image_array * mask
     image_array = image_array * 100
@@ -54,7 +55,7 @@ def find_corners(image_path, should_crop = True):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
     # Using OpenCV.goodFeaturesToTrack() function to get the corners
-    corner_coordinates = cv2.goodFeaturesToTrack(image = gray, maxCorners = 27, qualityLevel = 0.04, minDistance = 10, useHarrisDetector = True) 
+    corner_coordinates = cv2.goodFeaturesToTrack(image = gray, maxCorners = 27, qualityLevel = 0.04, minDistance = 3, useHarrisDetector = True) 
     corner_coordinates = np.intp(corner_coordinates) 
 
     # Plotting the original image with the detected corners
@@ -65,7 +66,7 @@ def find_corners(image_path, should_crop = True):
         plt.imshow(img), plt.show() 
         plt.savefig("temp.png")
 
-    os.remove("./to_be_deleted.png")
+    # os.remove("./to_be_deleted.png")
     return corner_coordinates
 
 def get_mean_particle_distance_error(eval_dir, expert_dir, cached_path, task, config_id):

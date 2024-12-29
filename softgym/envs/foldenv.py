@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import pyflex
 from softgym.action_space.action_space import PickerPickPlace
-from softgym.envs.flex_utils import set_scene
+from softgym.envs.flex_utils import set_scene,set_cloth3d_scene
 from copy import deepcopy
 import cv2
 import matplotlib.pyplot as plt
@@ -47,7 +47,7 @@ class FoldEnv:
 
     def reset(self, config_id):
         config, state = self.configs[config_id], self.init_states[config_id]
-        set_scene(config=config, state=state)
+        set_cloth3d_scene(config=config, state=state)
         self.current_config = deepcopy(config)
         self.camera_params = deepcopy(state["camera_params"])
 

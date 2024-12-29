@@ -75,7 +75,7 @@ This simulation environment is based on SoftGym. You can follow the instructions
 - To reproduce the results obtained by GPT-Fabric (GPT-4, zero-shot):
     ~~~
     python eval.py --task DoubleTriangle --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type zero-shot
-    python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-4-1106-preview --cached rectangle --total_runs 5 --eval_type zero-shot
+    python eval.py --task DoubleStraight --img_size 128 --gpt_model gpt-4o --cached Trousers --total_runs 1 --eval_type zero-shot
     python eval.py --task AllCornersInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type zero-shot
     python eval.py --task CornersEdgesInward --img_size 128 --gpt_model gpt-4-1106-preview --cached square --total_runs 5 --eval_type zero-shot
     ~~~
